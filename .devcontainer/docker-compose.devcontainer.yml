@@ -5,4 +5,8 @@ services:
     image: mcr.microsoft.com/devcontainers/base:jammy
     volumes:
       - ..:/movie-library:cached
+      - node-modules:/movie-library/node_modules
     command: sleep infinity
+
+volumes:
+  node-modules:

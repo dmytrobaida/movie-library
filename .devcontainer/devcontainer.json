@@ -12,6 +12,7 @@
 		"postgres",
 		"redis"
 	],
+	"remoteUser": "root",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
 			"version": 23,
