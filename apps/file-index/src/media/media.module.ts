@@ -1,9 +1,11 @@
 import { BullModule, InjectQueue } from '@nestjs/bullmq';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SyncProcessor } from './queues/sync.processor';
-import { SyncQueue } from './queues/queues';
+import { SyncProcessor } from './processors/sync.processor';
 import { Queue } from 'bullmq';
+import { UaserialsSyncService } from './services/uaserials-sync.service';
+import { SyncQueue } from './types/queues';
+import { PrismaService } from './services/prisma.service';
 
 @Module({
   imports: [
@@ -22,7 +24,7 @@ import { Queue } from 'bullmq';
     }),
   ],
   controllers: [],
-  providers: [SyncProcessor],
+  providers: [SyncProcessor, UaserialsSyncService, PrismaService],
 })
 export class MediaModule implements OnModuleInit {
   constructor(
@@ -36,7 +38,9 @@ export class MediaModule implements OnModuleInit {
       {},
       {
         repeat: {
-          pattern: '* * * * *',
+          // twice a day
+          pattern: '0 */12 * * *',
+          immediately: true,
         },
       },
     );

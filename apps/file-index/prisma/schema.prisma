@@ -13,7 +13,7 @@ model Movie {
   title    String
   year     Int
   poster   String
-  parseUrl String
+  parseUrl String @unique
 
   urls MediaUrl[]
 
@@ -27,7 +27,7 @@ model Show {
   title    String
   year     Int
   poster   String
-  parseUrl String
+  parseUrl String @unique
 
   episodes ShowEpisode[]
 
