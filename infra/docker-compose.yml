@@ -1,0 +1,10 @@
+name: "Movie library"
+
+services:
+  httpdirfs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    privileged: true
+    devices:
+      - /dev/fuse

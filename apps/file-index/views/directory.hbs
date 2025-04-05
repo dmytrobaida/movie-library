@@ -1,0 +1,16 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>{{directory}}</title>
+  </head>
+  <body>
+    <h1>Contents of {{directory}}</h1>
+    <ul>
+      {{#each filesOrFolders}}
+        <li>
+          <a href='{{this.url}}'>{{this.name}}</a>
+        </li>
+      {{/each}}
+    </ul>
+  </body>
+</html>
