@@ -3,8 +3,26 @@ name: "Movie library"
 services:
   httpdirfs:
     build:
-      context: .
-      dockerfile: Dockerfile
+      dockerfile: httpdirfs.Dockerfile
     privileged: true
     devices:
       - /dev/fuse
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: movie_user
+      POSTGRES_PASSWORD: movie_password
+      POSTGRES_DB: movie_library
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

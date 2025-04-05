@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Movie {
+  id String @id @default(uuid())
+
+  title    String
+  year     Int
+  poster   String
+  parseUrl String
+
+  urls MediaUrl[]
+
+  metadata        MediaMetadata? @relation(fields: [mediaMetadataId], references: [id])
+  mediaMetadataId String?
+}
+
+model Show {
+  id String @id @default(uuid())
+
+  title    String
+  year     Int
+  poster   String
+  parseUrl String
+
+  episodes ShowEpisode[]
+
+  metadata        MediaMetadata? @relation(fields: [mediaMetadataId], references: [id])
+  mediaMetadataId String?
+}
+
+model ShowEpisode {
+  id String @id @default(uuid())
+
+  season Int
+  number Int
+
+  urls MediaUrl[]
+
+  Show   Show?   @relation(fields: [showId], references: [id])
+  showId String?
+}
+
+model MediaMetadata {
+  id String @id @default(uuid())
+
+  description  String
+  englishTitle String
+  releaseDate  DateTime
+  county       String
+
+  Movie Movie[]
+  Show  Show[]
+}
+
+model MediaUrl {
+  id String @id @default(uuid())
+
+  name String
+  url  String
+
+  Movie   Movie?  @relation(fields: [movieId], references: [id])
+  movieId String?
+
+  ShowEpisode   ShowEpisode? @relation(fields: [showEpisodeId], references: [id])
+  showEpisodeId String?
+}

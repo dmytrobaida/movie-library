@@ -1,0 +1,21 @@
+{
+	"name": "Movie Library",
+	"dockerComposeFile": [
+		"../infra/docker-compose.yml",
+		"docker-compose.devcontainer.yml"
+	],
+	"service": "devcontainer",
+	"workspaceFolder": "/movie-library",
+	"shutdownAction": "stopCompose",
+	"runServices": [
+		"devcontainer",
+		"postgres",
+		"redis"
+	],
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": 23,
+			"installYarnUsingApt": false
+		}
+	}
+}

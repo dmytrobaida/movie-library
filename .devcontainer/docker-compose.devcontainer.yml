@@ -1,0 +1,8 @@
+name: "Movie library: Devcontainer"
+
+services:
+  devcontainer:
+    image: mcr.microsoft.com/devcontainers/base:jammy
+    volumes:
+      - ..:/movie-library:cached
+    command: sleep infinity
