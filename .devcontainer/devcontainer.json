@@ -17,5 +17,15 @@
 			"version": 23,
 			"installYarnUsingApt": false
 		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Prisma.prisma",
+				"esbenp.prettier-vscode",
+				"rvest.vs-code-prettier-eslint",
+				"cweijan.vscode-database-client2"
+			]
+		}
 	}
 }
