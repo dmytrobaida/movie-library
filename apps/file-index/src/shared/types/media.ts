@@ -5,9 +5,12 @@ export type MediaBase = {
   parseUrl: string;
 };
 
+export type MediaUrlBase = { name: string; url: string };
+
 export type MovieDetails = {
   description: string;
   originalTitle: string;
   releaseDate: Date;
   country: string;
+  urls: MediaUrlBase[];
 };

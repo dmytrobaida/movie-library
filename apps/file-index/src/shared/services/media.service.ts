@@ -44,6 +44,7 @@ export class MediaService {
       },
       include: {
         metadata: true,
+        urls: true,
       },
     });
 
@@ -51,31 +52,61 @@ export class MediaService {
       return null;
     }
 
+    if (movie.metadata != null && movie.urls.length > 0) {
+      console.info('Found cached movie info for', movie.id);
+      return movie;
+    }
+
+    const details = await this.uaserialsSyncService.getMovieDetails(
+      movie.parseUrl,
+    );
+
     if (movie.metadata == null) {
-      const details = await this.uaserialsSyncService.getMovieDetails(
-        movie.parseUrl,
-      );
-      const movieWithMetadata = await this.prismaService.movie.update({
+      await this.prismaService.movie.update({
         where: {
           id: movie.id,
         },
         data: {
           metadata: {
-            create: details,
+            create: {
+              originalTitle: details.originalTitle,
+              description: details.description,
+              releaseDate: details.releaseDate,
+              country: details.country,
+            },
           },
         },
-        include: {
-          metadata: true,
-        },
       });
-      return movieWithMetadata;
     }
 
-    return movie;
+    if (movie.urls.length === 0) {
+      await this.prismaService.movie.update({
+        where: {
+          id: movie.id,
+        },
+        data: {
+          urls: {
+            createMany: {
+              data: details.urls,
+            },
+          },
+        },
+      });
+    }
+
+    return this.prismaService.movie.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        metadata: true,
+        urls: true,
+      },
+    });
   }
 
   async getAllShows() {
-    return this.prismaService.movie.findMany();
+    return this.prismaService.show.findMany();
   }
 
   async getShow(id: string) {
@@ -85,9 +116,21 @@ export class MediaService {
       },
       include: {
         metadata: true,
-        episodes: true,
+        episodes: {
+          include: {
+            urls: true,
+          },
+        },
       },
     });
     return show;
+  }
+
+  async getMediaUrl(id: string) {
+    return this.prismaService.mediaUrl.findUnique({
+      where: {
+        id,
+      },
+    });
   }
 }

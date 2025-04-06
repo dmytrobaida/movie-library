@@ -1,2 +1,2 @@
-export const DirectoryPrefix = 'd';
-export const FilePrefix = 'f';
+export const DirectoryPrefix = '/d';
+export const FilePrefix = '/f';

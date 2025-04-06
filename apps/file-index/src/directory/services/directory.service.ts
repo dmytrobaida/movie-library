@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DirectoryContents } from '../types/directory';
-import { DirectoryPrefix } from 'src/shared/types/prefixes';
+import { DirectoryPrefix, FilePrefix } from 'src/shared/types/prefixes';
 import { join } from 'path';
 import { MediaService } from 'src/shared/services/media.service';
 import * as assert from 'assert';
@@ -47,7 +47,7 @@ export class DirectoryService {
       return {
         dirName: path.join('/'),
         filesOrFolders: movies.map((m) => ({
-          name: this.getMediaFolderName(m),
+          name: this.getMediaName(m),
           url: join(...path, m.id),
         })),
       };
@@ -59,8 +59,11 @@ export class DirectoryService {
 
     if (movie != null) {
       return {
-        dirName: this.getMediaFolderName(movie),
-        filesOrFolders: [],
+        dirName: this.getMediaName(movie),
+        filesOrFolders: movie.urls.map((u) => ({
+          name: `${this.getMediaName(movie)} - [${u.name}].strm`,
+          url: `${join(FilePrefix, u.id)}.strm`,
+        })),
       };
     }
 
@@ -74,7 +77,7 @@ export class DirectoryService {
       return {
         dirName: path.join('/'),
         filesOrFolders: shows.map((m) => ({
-          name: this.getMediaFolderName(m),
+          name: this.getMediaName(m),
           url: join(...path, m.id),
         })),
       };
@@ -86,7 +89,7 @@ export class DirectoryService {
 
     if (show != null) {
       return {
-        dirName: this.getMediaFolderName(show),
+        dirName: this.getMediaName(show),
         filesOrFolders: [],
       };
     }
@@ -94,7 +97,7 @@ export class DirectoryService {
     throw new Error('Not found!');
   }
 
-  private getMediaFolderName(media: { title: string; year: number }): string {
+  private getMediaName(media: { title: string; year: number }): string {
     return `${media.title} (${media.year})`;
   }
 }

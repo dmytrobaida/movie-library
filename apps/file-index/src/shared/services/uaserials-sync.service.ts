@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as assert from 'assert';
-import { parse } from 'node-html-parser';
-import { MediaBase, MovieDetails } from '../types/media';
+import { parse, HTMLElement } from 'node-html-parser';
+import { MediaBase, MediaUrlBase, MovieDetails } from '../types/media';
 import { parseUnformattedUkrainianDate } from '../utils/date';
 
 const baseUrl = 'https://uaserial.top';
@@ -30,17 +30,20 @@ export class UaserialsSyncService {
     const country = root.querySelector(
       'div.movie-data-item--country > div.value > a',
     )?.text;
+    const urls = await this.parseUrlsFromHtml(root);
 
     assert(description, 'Something went wrong when parsing description!');
     assert(originalTitle, 'Something went wrong when parsing originalTitle!');
     assert(releaseDate, 'Something went wrong when parsing releaseDate!');
     assert(country, 'Something went wrong when parsing country!');
+    assert(urls.length > 0, 'Something went wrong when parsing urls');
 
     return {
       description,
       releaseDate: parseUnformattedUkrainianDate(releaseDate),
       originalTitle,
       country,
+      urls,
     };
   }
 
@@ -101,5 +104,43 @@ export class UaserialsSyncService {
       media: pageMedia,
       nextPage,
     };
+  }
+
+  private async parseAshdiPage(url: string): Promise<{ m3u8Url: string }> {
+    const html = await fetch(url).then((r) => r.text());
+    const match = html.match(/https:\/\/ashdi\.vip\/.*?\.m3u8/);
+    assert(match, 'Something went wrong when parsing m3u8 URL!');
+
+    return { m3u8Url: match[0] };
+  }
+
+  private async parseUrlsFromHtml(
+    htmlRoot: HTMLElement,
+  ): Promise<MediaUrlBase[]> {
+    const embedLink = htmlRoot.querySelector('#embed')?.getAttribute('src');
+    assert(embedLink, 'Something went wrong when parsing embedLink!');
+    const embedHtml = await fetch(baseUrl + embedLink).then((r) => r.text());
+    const embedRoot = parse(embedHtml);
+    const voicesUrls = embedRoot
+      .querySelectorAll('select.voices__select > option')
+      .map((o) => ({
+        name: o.text,
+        url: o.getAttribute('value'),
+      }));
+    const urls: MediaUrlBase[] = [];
+
+    for (const voiceUrl of voicesUrls) {
+      if (!voiceUrl.url?.includes('ashdi')) {
+        continue;
+      }
+
+      const { m3u8Url } = await this.parseAshdiPage(voiceUrl.url);
+      urls.push({
+        name: voiceUrl.name,
+        url: m3u8Url,
+      });
+    }
+
+    return urls;
   }
 }
