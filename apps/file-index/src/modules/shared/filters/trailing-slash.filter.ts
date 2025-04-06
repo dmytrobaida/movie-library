@@ -16,6 +16,8 @@ export class TrailingSlashFilter implements ExceptionFilter {
 
     if (request.url.at(-1) !== '/') {
       response.redirect(HttpStatus.MOVED_PERMANENTLY, `${request.url}/`);
+    } else {
+      response.status(HttpStatus.NOT_FOUND).send('Not found!');
     }
   }
 }

@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { DirectoryContents } from '../types/directory';
-import { FilePrefix } from 'src/shared/types/prefixes';
-import { join } from 'path';
-import { MediaService } from 'src/shared/services/media.service';
+import { MediaService } from 'src/modules/shared/services/media.service';
 import * as assert from 'assert';
+import { getMediaName, parseMediaName } from '../utils/media-name';
 
 const MoviesFolderName = 'Movies';
 const ShowsFolderName = 'Shows';
 
 @Injectable()
-export class DirectoryService {
+export class IndexService {
   constructor(private readonly mediaService: MediaService) {}
 
   async readDirectory(path: string[]): Promise<DirectoryContents> {
@@ -47,22 +46,27 @@ export class DirectoryService {
       return {
         dirName: path.join('/'),
         filesOrFolders: movies.map((m) => ({
-          name: this.getMediaName(m),
-          url: `${m.id}/`,
+          name: getMediaName(m),
+          url: `${getMediaName(m)}/`,
         })),
       };
     }
 
-    const movieId = path.at(-1);
+    const movieName = path.at(-1);
+
+    assert(movieName, 'Movie name should be present!');
+    const { title, year } = parseMediaName(movieName);
+    const movieId = await this.mediaService.getMovieId(title, year);
+
     assert(movieId, 'Id should be present!');
     const movie = await this.mediaService.getMovie(movieId);
 
     if (movie != null) {
       return {
-        dirName: this.getMediaName(movie),
+        dirName: getMediaName(movie),
         filesOrFolders: movie.urls.map((u) => ({
-          name: `${this.getMediaName(movie)} - [${u.name}].strm`,
-          url: `${join(FilePrefix, u.id)}.strm`,
+          name: `${getMediaName(movie)} - [${u.name}].strm`,
+          url: `${movie.title}.strm`,
         })),
       };
     }
@@ -77,7 +81,7 @@ export class DirectoryService {
       return {
         dirName: path.join('/'),
         filesOrFolders: shows.map((m) => ({
-          name: this.getMediaName(m),
+          name: getMediaName(m),
           url: `${m.id}/`,
         })),
       };
@@ -89,15 +93,11 @@ export class DirectoryService {
 
     if (show != null) {
       return {
-        dirName: this.getMediaName(show),
+        dirName: getMediaName(show),
         filesOrFolders: [],
       };
     }
 
     throw new Error('Not found!');
-  }
-
-  private getMediaName(media: { title: string; year: number }): string {
-    return `${media.title} (${media.year})`;
   }
 }

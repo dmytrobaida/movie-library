@@ -109,6 +109,17 @@ export class MediaService {
     });
   }
 
+  async getMovieId(title: string, year: number) {
+    const movie = await this.prismaService.movie.findFirst({
+      where: {
+        title,
+        year,
+      },
+    });
+
+    return movie?.id;
+  }
+
   async getAllShows() {
     return this.prismaService.show.findMany({
       orderBy: {

@@ -1,6 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { SyncQueue } from '../types/queues';
-import { MediaService } from 'src/shared/services/media.service';
+import { MediaService } from 'src/modules/shared/services/media.service';
 
 @Processor(SyncQueue)
 export class SyncProcessor extends WorkerHost {
