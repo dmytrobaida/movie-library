@@ -33,6 +33,8 @@ export class MediaModule implements OnModuleInit {
   ) {}
 
   onModuleInit() {
+    // TODO: remove
+    return;
     void this.syncQueue.add(
       'sync',
       {},

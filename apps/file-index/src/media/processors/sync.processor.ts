@@ -14,14 +14,29 @@ export class SyncProcessor extends WorkerHost {
 
   async process() {
     try {
+      console.log('Start syncing movies');
       const movies = await this.uaserialsSyncService.getMoviesList();
 
       await this.prismaService.movie.createMany({
         data: movies,
         skipDuplicates: true,
       });
+
+      console.log('End syncing movies:', movies.length);
+
+      console.log('Start syncing shows');
+      const shows = await this.uaserialsSyncService.getShowsList();
+
+      await this.prismaService.show.createMany({
+        data: shows,
+        skipDuplicates: true,
+      });
+
+      console.log('End syncing shows:', shows.length);
     } catch (err) {
-      console.error(err);
+      if (err instanceof Error) {
+        console.error(err.message);
+      }
       throw err;
     }
   }
