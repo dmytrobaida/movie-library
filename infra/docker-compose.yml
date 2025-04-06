@@ -11,18 +11,6 @@ services:
     ports:
       - "3000:3000"
 
-  # httpdirfs:
-  #   build:
-  #     context: .
-  #     dockerfile: httpdirfs.Dockerfile
-  #   privileged: true
-  #   devices:
-  #     - /dev/fuse
-  #   environment:
-  #     INDEX_URL: "http://fileindex:3000/i/"
-  #   depends_on:
-  #     - fileindex
-
   postgres:
     image: postgres:latest
     environment:
@@ -41,14 +29,17 @@ services:
   rclone:
     image: mumiehub/rclone-mount:latest
     environment:
-      RemotePath: "index:/"
-      MountPoint: "/test"
+      RemotePath: "index:"
+      MountPoint: "/mnt/index"
+      MountCommands: ""
     privileged: true
     devices:
       - /dev/fuse
     volumes:
       - ./rclone:/config
     platform: linux/amd64
+    depends_on:
+      - fileindex
 
 volumes:
   postgres_data:

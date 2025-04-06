@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DirectoryContents } from '../types/directory';
 import { MediaService } from 'src/modules/shared/services/media.service';
 import * as assert from 'assert';
-import { getMediaName, parseMediaName } from '../utils/media-name';
+import { getMediaName } from '../utils/media-name';
 
 const MoviesFolderName = 'Movies';
 const ShowsFolderName = 'Shows';
@@ -47,27 +47,27 @@ export class IndexService {
         dirName: path.join('/'),
         filesOrFolders: movies.map((m) => ({
           name: getMediaName(m),
-          url: `${getMediaName(m)}/`,
+          url: `${m.id}/`,
         })),
       };
     }
 
-    const movieName = path.at(-1);
-
-    assert(movieName, 'Movie name should be present!');
-    const { title, year } = parseMediaName(movieName);
-    const movieId = await this.mediaService.getMovieId(title, year);
-
+    const movieId = path.at(-1);
     assert(movieId, 'Id should be present!');
     const movie = await this.mediaService.getMovie(movieId);
 
     if (movie != null) {
       return {
         dirName: getMediaName(movie),
-        filesOrFolders: movie.urls.map((u) => ({
-          name: `${getMediaName(movie)} - [${u.name}].strm`,
-          url: `${movie.title}.strm`,
-        })),
+        filesOrFolders: movie.urls
+          .map((u) => ({
+            name: `${getMediaName(movie)} - [${u.name}].strm`,
+            url: `${u.id}.strm`,
+          }))
+          .concat({
+            name: 'movie.nfo',
+            url: 'movie.nfo',
+          }),
       };
     }
 
