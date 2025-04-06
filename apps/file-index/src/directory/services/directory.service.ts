@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DirectoryContents } from '../types/directory';
-import { DirectoryPrefix, FilePrefix } from 'src/shared/types/prefixes';
+import { FilePrefix } from 'src/shared/types/prefixes';
 import { join } from 'path';
 import { MediaService } from 'src/shared/services/media.service';
 import * as assert from 'assert';
@@ -19,11 +19,11 @@ export class DirectoryService {
         filesOrFolders: [
           {
             name: MoviesFolderName,
-            url: join(DirectoryPrefix, MoviesFolderName),
+            url: `${MoviesFolderName}/`,
           },
           {
             name: ShowsFolderName,
-            url: join(DirectoryPrefix, ShowsFolderName),
+            url: `${ShowsFolderName}/`,
           },
         ],
       };
@@ -48,7 +48,7 @@ export class DirectoryService {
         dirName: path.join('/'),
         filesOrFolders: movies.map((m) => ({
           name: this.getMediaName(m),
-          url: join(...path, m.id),
+          url: `${m.id}/`,
         })),
       };
     }
@@ -78,7 +78,7 @@ export class DirectoryService {
         dirName: path.join('/'),
         filesOrFolders: shows.map((m) => ({
           name: this.getMediaName(m),
-          url: join(...path, m.id),
+          url: `${m.id}/`,
         })),
       };
     }

@@ -34,7 +34,11 @@ export class MediaService {
   }
 
   async getAllMovies() {
-    return this.prismaService.movie.findMany();
+    return this.prismaService.movie.findMany({
+      orderBy: {
+        title: 'asc',
+      },
+    });
   }
 
   async getMovie(id: string) {
@@ -106,7 +110,11 @@ export class MediaService {
   }
 
   async getAllShows() {
-    return this.prismaService.show.findMany();
+    return this.prismaService.show.findMany({
+      orderBy: {
+        title: 'asc',
+      },
+    });
   }
 
   async getShow(id: string) {

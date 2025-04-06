@@ -31,7 +31,6 @@ export class SyncModule implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    // TODO: remove
     return;
     void this.syncQueue.add(
       'sync',

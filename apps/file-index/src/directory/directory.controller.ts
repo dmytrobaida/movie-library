@@ -6,7 +6,7 @@ import { DirectoryPrefix } from 'src/shared/types/prefixes';
 export class DirectoryController {
   constructor(private readonly directoryService: DirectoryService) {}
 
-  @Get(['', '*path'])
+  @Get(['/{*path/}'])
   @Render('directory')
   async directory(@Param('path') path: string[] = []) {
     const directoryContents = await this.directoryService.readDirectory(path);
