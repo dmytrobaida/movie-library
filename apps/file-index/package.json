@@ -23,6 +23,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/client": "6.5.0",
     "bullmq": "^5.47.1",
+    "date-fns": "^4.1.0",
     "hbs": "^4.2.0",
     "node-html-parser": "^7.0.1",
     "reflect-metadata": "^0.2.2",

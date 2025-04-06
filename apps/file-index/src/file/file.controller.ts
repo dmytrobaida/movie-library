@@ -1,6 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
+import { FilePrefix } from 'src/shared/types/prefixes';
 
-@Controller('f')
+@Controller(FilePrefix)
 export class FileController {
   constructor() {}
 

@@ -3,9 +3,7 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SyncProcessor } from './processors/sync.processor';
 import { Queue } from 'bullmq';
-import { UaserialsSyncService } from './services/uaserials-sync.service';
 import { SyncQueue } from './types/queues';
-import { PrismaService } from './services/prisma.service';
 
 @Module({
   imports: [
@@ -24,9 +22,9 @@ import { PrismaService } from './services/prisma.service';
     }),
   ],
   controllers: [],
-  providers: [SyncProcessor, UaserialsSyncService, PrismaService],
+  providers: [SyncProcessor],
 })
-export class MediaModule implements OnModuleInit {
+export class SyncModule implements OnModuleInit {
   constructor(
     @InjectQueue(SyncQueue)
     private readonly syncQueue: Queue,

@@ -50,10 +50,10 @@ model ShowEpisode {
 model MediaMetadata {
   id String @id @default(uuid())
 
-  description  String
-  englishTitle String
-  releaseDate  DateTime
-  county       String
+  description   String
+  originalTitle String
+  releaseDate   DateTime
+  country       String
 
   Movie Movie[]
   Show  Show[]

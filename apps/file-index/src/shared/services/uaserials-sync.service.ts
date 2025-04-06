@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import * as assert from 'assert';
 import { parse } from 'node-html-parser';
-import { MediaBase } from '../types/media';
+import { MediaBase, MovieDetails } from '../types/media';
+import { parseUnformattedUkrainianDate } from '../utils/date';
 
 const baseUrl = 'https://uaserial.top';
 
@@ -13,6 +14,34 @@ export class UaserialsSyncService {
 
   getShowsList(): Promise<MediaBase[]> {
     return this.parsePaginated('/serial');
+  }
+
+  async getMovieDetails(url: string): Promise<MovieDetails> {
+    const html = await fetch(url).then((r) => r.text());
+    const root = parse(html);
+
+    const description = root.querySelector('div.description > div.text')?.text;
+    const originalTitle = root.querySelector(
+      'div.header--title > div.original',
+    )?.text;
+    const releaseDate = root.querySelector(
+      'div.movie-data-item--date > div.value',
+    )?.textContent;
+    const country = root.querySelector(
+      'div.movie-data-item--country > div.value > a',
+    )?.text;
+
+    assert(description, 'Something went wrong when parsing description!');
+    assert(originalTitle, 'Something went wrong when parsing originalTitle!');
+    assert(releaseDate, 'Something went wrong when parsing releaseDate!');
+    assert(country, 'Something went wrong when parsing country!');
+
+    return {
+      description,
+      releaseDate: parseUnformattedUkrainianDate(releaseDate),
+      originalTitle,
+      country,
+    };
   }
 
   private async parsePaginated(startPage: string): Promise<MediaBase[]> {

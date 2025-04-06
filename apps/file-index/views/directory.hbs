@@ -5,12 +5,12 @@
   </head>
   <body>
     <h1>Contents of {{directory}}</h1>
-    <ul>
+    <ol>
       {{#each filesOrFolders}}
         <li>
           <a href='{{this.url}}'>{{this.name}}</a>
         </li>
       {{/each}}
-    </ul>
+    </ol>
   </body>
 </html>
