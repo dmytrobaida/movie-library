@@ -1,0 +1,63 @@
+import { Controller, Get, Header, Param } from '@nestjs/common';
+import { StremioPrefix } from '../shared/types/prefixes';
+import { MediaService } from '../shared/services/media.service';
+import manifest from './manifest.json';
+
+@Controller(StremioPrefix)
+export class StremioController {
+  constructor(private readonly mediaService: MediaService) {}
+
+  @Get('manifest.json')
+  @Header('content-type', 'application/json')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Access-Control-Allow-Headers', '*')
+  manifest() {
+    return manifest;
+  }
+
+  @Get('catalog/:type/:id.json')
+  @Header('content-type', 'application/json')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Access-Control-Allow-Headers', '*')
+  async catalog(@Param('type') type: string, @Param('id') id: string) {
+    if (type === 'movie') {
+      const movies = await this.mediaService.getAllMovies();
+      const metas = movies.map((m) => ({
+        id: m.id,
+        type,
+        name: m.title,
+        poster: m.poster,
+      }));
+
+      return {
+        metas,
+      };
+    }
+
+    return {
+      metas: [],
+    };
+  }
+
+  @Get('stream/:type/:id.json')
+  @Header('content-type', 'application/json')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Access-Control-Allow-Headers', '*')
+  async streams(@Param('type') type: string, @Param('id') id: string) {
+    if (type === 'movie') {
+      const movie = await this.mediaService.getMovie(id);
+      const streams = movie?.urls.map((u) => ({
+        title: u.name,
+        url: u.url,
+      }));
+
+      return {
+        streams,
+      };
+    }
+
+    return {
+      streams: [],
+    };
+  }
+}

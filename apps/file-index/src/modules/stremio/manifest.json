@@ -1,0 +1,27 @@
+{
+  "id": "db.fileindex",
+  "version": "1.0.0",
+  "name": "File Index",
+  "description": "Home File Index",
+  "types": [
+    "movie",
+    "series"
+  ],
+  "resources": [
+    "catalog",
+    "stream"
+  ],
+  "catalogs": [
+    {
+      "type": "movie",
+      "id": "Movies"
+    },
+    {
+      "type": "series",
+      "id": "Shows"
+    }
+  ],
+  "idPrefixes": [
+    ""
+  ]
+}

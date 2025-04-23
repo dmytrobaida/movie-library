@@ -31,7 +31,6 @@ export class SyncModule implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    return;
     void this.syncQueue.add(
       'sync',
       {},
@@ -39,7 +38,7 @@ export class SyncModule implements OnModuleInit {
         repeat: {
           // twice a day
           pattern: '0 */12 * * *',
-          immediately: true,
+          // immediately: true,
         },
       },
     );
