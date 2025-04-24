@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as assert from 'assert';
+import assert from 'assert';
 import { DirectoryContents } from 'src/modules/index/types/directory';
 import { getMediaName } from 'src/modules/index/utils/media-name';
 import { MediaService } from 'src/modules/shared/services/media.service';

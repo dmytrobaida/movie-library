@@ -48,6 +48,7 @@ export class StremioController {
   @Header('Access-Control-Allow-Origin', '*')
   @Header('Access-Control-Allow-Headers', '*')
   async streams(@Param('type') type: string, @Param('id') id: string) {
+    console.log('stremio', id);
     if (type === 'movie') {
       const movie = isUUID(id)
         ? await this.mediaService.getMovieById(id)

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as assert from 'assert';
+import assert from 'assert';
 import { isURL } from 'class-validator';
 import { HTMLElement, parse } from 'node-html-parser';
 import { ISync } from 'src/modules/shared/services/sync/i-sync.interface';
@@ -10,6 +10,7 @@ import {
 } from 'src/modules/shared/types/media';
 import { parseAshdiPage } from 'src/modules/shared/utils/ashdi';
 import { parseUnformattedUkrainianDate } from 'src/modules/shared/utils/date';
+import { getPageHtml } from 'src/modules/shared/utils/html';
 
 const baseUrl = 'https://uaserial.top';
 
@@ -30,7 +31,7 @@ export class UaserialsSyncService implements ISync {
   async getMovieDetails(url: string): Promise<MovieDetails> {
     assert(isURL(url), 'Should be url!');
 
-    const html = await fetch(url).then((r) => r.text());
+    const html = await getPageHtml(url);
     const root = parse(html);
 
     const posterUrl = root
@@ -76,7 +77,7 @@ export class UaserialsSyncService implements ISync {
     let i = 0;
 
     while (nextUrl != null) {
-      const html = await fetch(baseUrl + nextUrl).then((r) => r.text());
+      const html = await getPageHtml(baseUrl + nextUrl);
       const parseResult = this.parseHtmlPage(html);
       allMedia.push(...parseResult.media);
       nextUrl = parseResult.nextPage;
@@ -127,7 +128,7 @@ export class UaserialsSyncService implements ISync {
   ): Promise<MediaUrlBase[]> {
     const embedLink = htmlRoot.querySelector('#embed')?.getAttribute('src');
     assert(embedLink, 'Something went wrong when parsing embedLink!');
-    const embedHtml = await fetch(baseUrl + embedLink).then((r) => r.text());
+    const embedHtml = await getPageHtml(baseUrl + embedLink);
     const embedRoot = parse(embedHtml);
     const voicesUrls = embedRoot
       .querySelectorAll('select.voices__select > option')

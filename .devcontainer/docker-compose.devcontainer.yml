@@ -2,6 +2,7 @@ name: "Movie library: Devcontainer"
 
 services:
   devcontainer:
+    platform: linux/amd64
     image: mcr.microsoft.com/devcontainers/base:jammy
     volumes:
       - ..:/movie-library:cached

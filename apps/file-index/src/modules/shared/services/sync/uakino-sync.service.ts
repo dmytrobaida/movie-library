@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as assert from 'assert';
+import assert from 'assert';
 import { isURL } from 'class-validator';
 import { HTMLElement, parse } from 'node-html-parser';
 import { ISync } from 'src/modules/shared/services/sync/i-sync.interface';
@@ -9,6 +9,7 @@ import {
   MovieDetails,
 } from 'src/modules/shared/types/media';
 import { parseAshdiPage } from 'src/modules/shared/utils/ashdi';
+import { getPageHtml } from 'src/modules/shared/utils/html';
 
 const uakinoSearchUrl = 'https://uakino.me/';
 const baseUrl = 'https://uakino.me/';
@@ -60,7 +61,7 @@ export class UakinoSyncService implements ISync {
   async getMovieDetails(url: string): Promise<MovieDetails> {
     assert(isURL(url), 'Should be url!');
 
-    const html = await fetch(url).then((r) => r.text());
+    const html = await getPageHtml(url, true);
     const root = parse(html);
 
     const posterUrl = root
@@ -129,15 +130,36 @@ export class UakinoSyncService implements ISync {
   ): Promise<MediaUrlBase[]> {
     const ashdiUrl = htmlRoot.querySelector('iframe#pre')?.getAttribute('src');
 
-    assert(ashdiUrl, 'Something went wrong when parsing ashdiUrl!');
+    if (ashdiUrl != null) {
+      const { m3u8Url } = await parseAshdiPage(ashdiUrl);
 
-    const { m3u8Url } = await parseAshdiPage(ashdiUrl);
+      return [
+        {
+          name: 'Uakino default',
+          url: m3u8Url,
+        },
+      ];
+    }
 
-    return [
-      {
-        name: 'Uakino default',
-        url: m3u8Url,
-      },
-    ];
+    const urls: MediaUrlBase[] = [];
+    const voicesLi = htmlRoot
+      .querySelectorAll('div.playlists-videos li')
+      .map((li) => ({
+        name: li.getAttribute('data-voice'),
+        ashdiUrl: li.getAttribute('data-file'),
+      }));
+
+    for (const voiceLi of voicesLi) {
+      if (voiceLi.ashdiUrl != null && voiceLi.name != null) {
+        const { m3u8Url } = await parseAshdiPage(voiceLi.ashdiUrl);
+
+        urls.push({
+          name: voiceLi.name,
+          url: m3u8Url,
+        });
+      }
+    }
+
+    return urls;
   }
 }
