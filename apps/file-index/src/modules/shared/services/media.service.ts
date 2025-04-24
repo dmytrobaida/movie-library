@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { MediaMetadata } from '@prisma/client';
 import { PrismaService } from 'src/modules/shared/services/prisma.service';
 import { SyncServiceFactory } from 'src/modules/shared/services/sync/sync-service.factory';
@@ -10,6 +10,8 @@ type SyncResults = {
 
 @Injectable()
 export class MediaService {
+  private readonly logger = new Logger(MediaService.name);
+
   constructor(
     private readonly syncServiceFactory: SyncServiceFactory,
     private readonly prismaService: PrismaService,
@@ -64,7 +66,7 @@ export class MediaService {
     }
 
     if (movie.metadata != null && movie.urls.length > 0) {
-      console.info('Found cached movie info for', movie.id);
+      this.logger.log(`Found cached movie info for: ${movie.id}`);
       return movie;
     }
 
@@ -169,7 +171,7 @@ export class MediaService {
     });
 
     if (existingMovie != null) {
-      console.info('Found cached movie info for', existingMovie.id);
+      this.logger.log(`Found cached movie info for: ${existingMovie.id}`);
       return existingMovie;
     }
 

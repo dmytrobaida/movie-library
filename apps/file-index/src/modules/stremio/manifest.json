@@ -1,26 +1,16 @@
 {
-  "id": "db.fileindex",
+  "id": "db.homelibrary",
   "version": "1.0.0",
-  "name": "File Index",
-  "description": "Home File Index",
+  "name": "Home Library",
+  "description": "My home library with movies and shows from Uakino and Uaserials",
   "types": [
     "movie",
     "series"
   ],
   "resources": [
-    "catalog",
     "stream"
   ],
-  "catalogs": [
-    {
-      "type": "movie",
-      "id": "Movies"
-    },
-    {
-      "type": "series",
-      "id": "Shows"
-    }
-  ],
+  "catalogs": [],
   "idPrefixes": [
     ""
   ]

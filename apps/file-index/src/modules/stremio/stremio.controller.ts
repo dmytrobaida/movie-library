@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Param } from '@nestjs/common';
+import { Controller, Get, Header, Logger, Param } from '@nestjs/common';
 import { isUUID } from 'class-validator';
 import { MediaService } from 'src/modules/shared/services/media.service';
 import { StremioPrefix } from 'src/modules/shared/types/prefixes';
@@ -6,6 +6,8 @@ import manifest from 'src/modules/stremio/manifest.json';
 
 @Controller(StremioPrefix)
 export class StremioController {
+  private readonly logger = new Logger(StremioController.name);
+
   constructor(private readonly mediaService: MediaService) {}
 
   @Get('manifest.json')
@@ -20,10 +22,7 @@ export class StremioController {
   @Header('content-type', 'application/json')
   @Header('Access-Control-Allow-Origin', '*')
   @Header('Access-Control-Allow-Headers', '*')
-  async catalog(
-    @Param('type') type: string,
-    // @Param('id') id: string
-  ) {
+  async catalog(@Param('type') type: string) {
     if (type === 'movie') {
       const movies = await this.mediaService.getAllMovies();
       const metas = movies.map((m) => ({
@@ -48,7 +47,8 @@ export class StremioController {
   @Header('Access-Control-Allow-Origin', '*')
   @Header('Access-Control-Allow-Headers', '*')
   async streams(@Param('type') type: string, @Param('id') id: string) {
-    console.log('stremio', id);
+    this.logger.log(`Fetching stremio movie for: ${id}`);
+
     if (type === 'movie') {
       const movie = isUUID(id)
         ? await this.mediaService.getMovieById(id)
