@@ -30,7 +30,7 @@ export class StremioController {
         id: m.id,
         type,
         name: m.title,
-        poster: m.poster,
+        poster: m.metadata?.posterUrl,
       }));
 
       return {

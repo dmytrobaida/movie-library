@@ -11,8 +11,6 @@ model Movie {
   id String @id @default(uuid())
 
   title    String
-  year     Int
-  poster   String
   parseUrl String @unique
 
   urls MediaUrl[]
@@ -25,8 +23,6 @@ model Show {
   id String @id @default(uuid())
 
   title    String
-  year     Int
-  poster   String
   parseUrl String @unique
 
   episodes ShowEpisode[]
@@ -50,6 +46,8 @@ model ShowEpisode {
 model MediaMetadata {
   id String @id @default(uuid())
 
+  year          Int
+  posterUrl     String
   description   String
   originalTitle String
   releaseDate   DateTime

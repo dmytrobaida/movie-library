@@ -60,7 +60,14 @@ export class IndexController {
 <movie>
   <title>${movie.title}</title>
   <originaltitle>${movie.metadata.originalTitle}</originaltitle>
-  <year>${movie.year}</year>
+  <year>${movie.metadata.year}</year>
 </movie>`;
+  }
+
+  @Get('/imdb/:id')
+  @Header('content-type', 'application/json')
+  async imdb(@Param('id') id: string) {
+    const movie = await this.mediaService.getMovieByImdbId(id);
+    return movie;
   }
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { MediaMetadata } from '@prisma/client';
 import { PrismaService } from 'src/modules/shared/services/prisma.service';
 import { SyncServiceFactory } from 'src/modules/shared/services/sync/sync-service.factory';
 
@@ -38,10 +39,16 @@ export class MediaService {
       orderBy: {
         title: 'asc',
       },
+      include: {
+        metadata: true,
+      },
     });
   }
 
-  async getMovieById(id: string) {
+  async getMovieById(
+    id: string,
+    partialMetadataToAdd?: Partial<MediaMetadata>,
+  ) {
     const movie = await this.prismaService.movie.findUnique({
       where: {
         id,
@@ -73,6 +80,9 @@ export class MediaService {
         data: {
           metadata: {
             create: {
+              ...partialMetadataToAdd,
+              year: details.year,
+              posterUrl: details.posterUrl,
               originalTitle: details.originalTitle,
               description: details.description,
               releaseDate: details.releaseDate,
@@ -113,6 +123,9 @@ export class MediaService {
     return this.prismaService.show.findMany({
       orderBy: {
         title: 'asc',
+      },
+      include: {
+        metadata: true,
       },
     });
   }
@@ -156,6 +169,7 @@ export class MediaService {
     });
 
     if (existingMovie != null) {
+      console.info('Found cached movie info for', existingMovie.id);
       return existingMovie;
     }
 
@@ -163,10 +177,20 @@ export class MediaService {
       .getSyncService('uakino')
       .getMediaByImdbId(imdbId);
 
-    const newMovie = await this.prismaService.movie.create({
-      data: movieBase,
+    if (movieBase == null) {
+      throw new Error('Movie not found!');
+    }
+
+    const newMovie = await this.prismaService.movie.upsert({
+      where: {
+        parseUrl: movieBase.parseUrl,
+      },
+      create: movieBase,
+      update: movieBase,
     });
 
-    return this.getMovieById(newMovie.id);
+    return this.getMovieById(newMovie.id, {
+      imdbId,
+    });
   }
 }

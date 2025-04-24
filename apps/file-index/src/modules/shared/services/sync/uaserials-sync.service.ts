@@ -8,6 +8,7 @@ import {
   MediaUrlBase,
   MovieDetails,
 } from 'src/modules/shared/types/media';
+import { parseAshdiPage } from 'src/modules/shared/utils/ashdi';
 import { parseUnformattedUkrainianDate } from 'src/modules/shared/utils/date';
 
 const baseUrl = 'https://uaserial.top';
@@ -32,27 +33,37 @@ export class UaserialsSyncService implements ISync {
     const html = await fetch(url).then((r) => r.text());
     const root = parse(html);
 
-    const description = root.querySelector('div.description > div.text')?.text;
+    const posterUrl = root
+      .querySelector('div.poster > img')
+      ?.getAttribute('src');
+    const description = root
+      .querySelector('div.description > div.text')
+      ?.text.trim();
     const originalTitle = root.querySelector(
       'div.header--title > div.original',
     )?.text;
     const releaseDate = root.querySelector(
       'div.movie-data-item--date > div.value',
-    )?.textContent;
+    )?.text;
     const country = root.querySelector(
       'div.movie-data-item--country > div.value > a',
     )?.text;
     const urls = await this.parseUrlsFromHtml(root);
 
+    assert(posterUrl, 'Something went wrong when parsing posterUrl!');
     assert(description, 'Something went wrong when parsing description!');
     assert(originalTitle, 'Something went wrong when parsing originalTitle!');
     assert(releaseDate, 'Something went wrong when parsing releaseDate!');
     assert(country, 'Something went wrong when parsing country!');
     assert(urls.length > 0, 'Something went wrong when parsing urls');
 
+    const parsedReleaseDate = parseUnformattedUkrainianDate(releaseDate);
+
     return {
+      year: parsedReleaseDate.getFullYear(),
+      posterUrl: baseUrl + posterUrl,
       description,
-      releaseDate: parseUnformattedUkrainianDate(releaseDate),
+      releaseDate: parsedReleaseDate,
       originalTitle,
       country,
       urls,
@@ -92,22 +103,15 @@ export class UaserialsSyncService implements ISync {
 
     for (const item of gridItems) {
       const title = item.querySelector('div.name')?.text;
-      // TODO: remove default?
-      const year = item.querySelector('a.info__item--year')?.text ?? '-1';
-      const poster = item.querySelector('img.cover')?.getAttribute('src');
       const parseUrl = item
         .querySelector(`a[title='${title}']`)
         ?.getAttribute('href');
 
       assert(title, 'Something went wrong when parsing title!');
-      assert(year, 'Something went wrong when parsing year!');
-      assert(poster, 'Something went wrong when parsing poster!');
       assert(parseUrl, 'Something went wrong when parsing parseUrl!');
 
       pageMedia.push({
         title,
-        year: Number(year),
-        poster: baseUrl + poster,
         parseUrl: baseUrl + parseUrl,
       });
     }
@@ -116,14 +120,6 @@ export class UaserialsSyncService implements ISync {
       media: pageMedia,
       nextPage,
     };
-  }
-
-  private async parseAshdiPage(url: string): Promise<{ m3u8Url: string }> {
-    const html = await fetch(url).then((r) => r.text());
-    const match = html.match(/https:\/\/ashdi\.vip\/.*?\.m3u8/);
-    assert(match, 'Something went wrong when parsing m3u8 URL!');
-
-    return { m3u8Url: match[0] };
   }
 
   private async parseUrlsFromHtml(
@@ -146,7 +142,7 @@ export class UaserialsSyncService implements ISync {
         continue;
       }
 
-      const { m3u8Url } = await this.parseAshdiPage(voiceUrl.url);
+      const { m3u8Url } = await parseAshdiPage(voiceUrl.url);
       urls.push({
         name: voiceUrl.name,
         url: m3u8Url,
