@@ -54,6 +54,7 @@ model MediaMetadata {
   originalTitle String
   releaseDate   DateTime
   country       String
+  imdbId        String?
 
   Movie Movie[]
   Show  Show[]

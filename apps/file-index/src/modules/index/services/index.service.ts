@@ -54,7 +54,7 @@ export class IndexService {
 
     const movieId = path.at(-1);
     assert(movieId, 'Id should be present!');
-    const movie = await this.mediaService.getMovie(movieId);
+    const movie = await this.mediaService.getMovieById(movieId);
 
     if (movie != null) {
       return {

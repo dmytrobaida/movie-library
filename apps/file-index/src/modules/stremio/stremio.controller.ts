@@ -1,4 +1,5 @@
 import { Controller, Get, Header, Param } from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import { MediaService } from 'src/modules/shared/services/media.service';
 import { StremioPrefix } from 'src/modules/shared/types/prefixes';
 import manifest from 'src/modules/stremio/manifest.json';
@@ -48,14 +49,17 @@ export class StremioController {
   @Header('Access-Control-Allow-Headers', '*')
   async streams(@Param('type') type: string, @Param('id') id: string) {
     if (type === 'movie') {
-      const movie = await this.mediaService.getMovie(id);
+      const movie = isUUID(id)
+        ? await this.mediaService.getMovieById(id)
+        : await this.mediaService.getMovieByImdbId(id);
+
       const streams = movie?.urls.map((u) => ({
         title: u.name,
         url: u.url,
       }));
 
       return {
-        streams,
+        streams: streams ?? [],
       };
     }
 

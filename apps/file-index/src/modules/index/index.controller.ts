@@ -49,7 +49,7 @@ export class IndexController {
       throw new NotFoundException();
     }
 
-    const movie = await this.mediaService.getMovie(movieId);
+    const movie = await this.mediaService.getMovieById(movieId);
 
     if (movie == null || movie.metadata == null) {
       throw new NotFoundException();

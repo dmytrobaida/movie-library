@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/modules/shared/services/prisma.service';
-import { UaserialsSyncService } from 'src/modules/shared/services/uaserials-sync.service';
+import { SyncServiceFactory } from 'src/modules/shared/services/sync/sync-service.factory';
 
 type SyncResults = {
   movies: number;
@@ -10,18 +10,18 @@ type SyncResults = {
 @Injectable()
 export class MediaService {
   constructor(
-    private readonly uaserialsSyncService: UaserialsSyncService,
+    private readonly syncServiceFactory: SyncServiceFactory,
     private readonly prismaService: PrismaService,
   ) {}
 
   async syncAllMediaLists(): Promise<SyncResults> {
-    const movies = await this.uaserialsSyncService.getMoviesList();
+    const movies = await this.syncServiceFactory.getMoviesList();
     await this.prismaService.movie.createMany({
       data: movies,
       skipDuplicates: true,
     });
 
-    const shows = await this.uaserialsSyncService.getShowsList();
+    const shows = await this.syncServiceFactory.getShowsList();
     await this.prismaService.show.createMany({
       data: shows,
       skipDuplicates: true,
@@ -41,7 +41,7 @@ export class MediaService {
     });
   }
 
-  async getMovie(id: string) {
+  async getMovieById(id: string) {
     const movie = await this.prismaService.movie.findUnique({
       where: {
         id,
@@ -61,7 +61,7 @@ export class MediaService {
       return movie;
     }
 
-    const details = await this.uaserialsSyncService.getMovieDetails(
+    const details = await this.syncServiceFactory.getMovieDetails(
       movie.parseUrl,
     );
 
@@ -140,5 +140,33 @@ export class MediaService {
         id,
       },
     });
+  }
+
+  async getMovieByImdbId(imdbId: string) {
+    const existingMovie = await this.prismaService.movie.findFirst({
+      where: {
+        metadata: {
+          imdbId,
+        },
+      },
+      include: {
+        metadata: true,
+        urls: true,
+      },
+    });
+
+    if (existingMovie != null) {
+      return existingMovie;
+    }
+
+    const movieBase = await this.syncServiceFactory
+      .getSyncService('uakino')
+      .getMediaByImdbId(imdbId);
+
+    const newMovie = await this.prismaService.movie.create({
+      data: movieBase,
+    });
+
+    return this.getMovieById(newMovie.id);
   }
 }

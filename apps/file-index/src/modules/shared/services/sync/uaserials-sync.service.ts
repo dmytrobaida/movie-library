@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import * as assert from 'assert';
+import { isURL } from 'class-validator';
 import { HTMLElement, parse } from 'node-html-parser';
+import { ISync } from 'src/modules/shared/services/sync/i-sync.interface';
 import {
   MediaBase,
   MediaUrlBase,
@@ -11,7 +13,11 @@ import { parseUnformattedUkrainianDate } from 'src/modules/shared/utils/date';
 const baseUrl = 'https://uaserial.top';
 
 @Injectable()
-export class UaserialsSyncService {
+export class UaserialsSyncService implements ISync {
+  getMediaByImdbId(): Promise<MediaBase> {
+    throw new Error('Method not implemented.');
+  }
+
   getMoviesList(): Promise<MediaBase[]> {
     return this.parsePaginated('/movie');
   }
@@ -20,8 +26,10 @@ export class UaserialsSyncService {
     return this.parsePaginated('/serial');
   }
 
-  async getMovieDetails(urlOrId: string): Promise<MovieDetails> {
-    const html = await fetch(urlOrId).then((r) => r.text());
+  async getMovieDetails(url: string): Promise<MovieDetails> {
+    assert(isURL(url), 'Should be url!');
+
+    const html = await fetch(url).then((r) => r.text());
     const root = parse(html);
 
     const description = root.querySelector('div.description > div.text')?.text;
