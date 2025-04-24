@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { IndexModule } from './modules/index/index.module';
-import { SyncModule } from './modules/sync/sync.module';
 import { ConfigModule } from '@nestjs/config';
-import { SharedModule } from './modules/shared/shared.module';
-import { StremioModule } from './modules/stremio/stremio.module';
+import { IndexModule } from 'src/modules/index/index.module';
+import { SharedModule } from 'src/modules/shared/shared.module';
+import { StremioModule } from 'src/modules/stremio/stremio.module';
+import { SyncModule } from 'src/modules/sync/sync.module';
 
 @Module({
   imports: [

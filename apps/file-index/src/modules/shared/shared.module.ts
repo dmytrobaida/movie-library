@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
-import { PrismaService } from './services/prisma.service';
-import { UaserialsSyncService } from './services/uaserials-sync.service';
-import { MediaService } from './services/media.service';
+import { MediaService } from 'src/modules/shared/services/media.service';
+import { PrismaService } from 'src/modules/shared/services/prisma.service';
+import { UaserialsSyncService } from 'src/modules/shared/services/uaserials-sync.service';
 
 @Global()
 @Module({

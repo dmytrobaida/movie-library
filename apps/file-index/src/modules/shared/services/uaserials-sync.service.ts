@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import * as assert from 'assert';
-import { parse, HTMLElement } from 'node-html-parser';
-import { MediaBase, MediaUrlBase, MovieDetails } from '../types/media';
-import { parseUnformattedUkrainianDate } from '../utils/date';
+import { HTMLElement, parse } from 'node-html-parser';
+import {
+  MediaBase,
+  MediaUrlBase,
+  MovieDetails,
+} from 'src/modules/shared/types/media';
+import { parseUnformattedUkrainianDate } from 'src/modules/shared/utils/date';
 
 const baseUrl = 'https://uaserial.top';
 
@@ -16,8 +20,8 @@ export class UaserialsSyncService {
     return this.parsePaginated('/serial');
   }
 
-  async getMovieDetails(url: string): Promise<MovieDetails> {
-    const html = await fetch(url).then((r) => r.text());
+  async getMovieDetails(urlOrId: string): Promise<MovieDetails> {
+    const html = await fetch(urlOrId).then((r) => r.text());
     const root = parse(html);
 
     const description = root.querySelector('div.description > div.text')?.text;

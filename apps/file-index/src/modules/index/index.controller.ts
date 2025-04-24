@@ -6,9 +6,9 @@ import {
   Param,
   Render,
 } from '@nestjs/common';
-import { IndexService } from './services/index.service';
+import { IndexService } from 'src/modules/index/services/index.service';
+import { MediaService } from 'src/modules/shared/services/media.service';
 import { IndexPrefix } from 'src/modules/shared/types/prefixes';
-import { MediaService } from '../shared/services/media.service';
 
 @Controller(IndexPrefix)
 export class IndexController {

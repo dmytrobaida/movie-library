@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { StremioController } from './stremio.controller';
+import { StremioController } from 'src/modules/stremio/stremio.controller';
 
 @Module({
   imports: [],

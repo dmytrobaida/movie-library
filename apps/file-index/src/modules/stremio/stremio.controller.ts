@@ -1,7 +1,7 @@
 import { Controller, Get, Header, Param } from '@nestjs/common';
-import { StremioPrefix } from '../shared/types/prefixes';
-import { MediaService } from '../shared/services/media.service';
-import manifest from './manifest.json';
+import { MediaService } from 'src/modules/shared/services/media.service';
+import { StremioPrefix } from 'src/modules/shared/types/prefixes';
+import manifest from 'src/modules/stremio/manifest.json';
 
 @Controller(StremioPrefix)
 export class StremioController {
@@ -19,7 +19,10 @@ export class StremioController {
   @Header('content-type', 'application/json')
   @Header('Access-Control-Allow-Origin', '*')
   @Header('Access-Control-Allow-Headers', '*')
-  async catalog(@Param('type') type: string, @Param('id') id: string) {
+  async catalog(
+    @Param('type') type: string,
+    // @Param('id') id: string
+  ) {
     if (type === 'movie') {
       const movies = await this.mediaService.getAllMovies();
       const metas = movies.map((m) => ({

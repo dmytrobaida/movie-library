@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { DirectoryContents } from '../types/directory';
-import { MediaService } from 'src/modules/shared/services/media.service';
 import * as assert from 'assert';
-import { getMediaName } from '../utils/media-name';
+import { DirectoryContents } from 'src/modules/index/types/directory';
+import { getMediaName } from 'src/modules/index/utils/media-name';
+import { MediaService } from 'src/modules/shared/services/media.service';
 
 const MoviesFolderName = 'Movies';
 const ShowsFolderName = 'Shows';

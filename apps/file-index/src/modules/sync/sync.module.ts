@@ -1,9 +1,9 @@
 import { BullModule, InjectQueue } from '@nestjs/bullmq';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SyncProcessor } from './processors/sync.processor';
 import { Queue } from 'bullmq';
-import { SyncQueue } from './types/queues';
+import { SyncProcessor } from 'src/modules/sync/processors/sync.processor';
+import { SyncQueue } from 'src/modules/sync/types/queues';
 
 @Module({
   imports: [
