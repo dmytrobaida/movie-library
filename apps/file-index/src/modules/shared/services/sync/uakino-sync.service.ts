@@ -135,7 +135,7 @@ export class UakinoSyncService implements ISync {
 
       return [
         {
-          name: 'Uakino default',
+          name: 'Uakino (default)',
           url: m3u8Url,
         },
       ];

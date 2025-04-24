@@ -61,6 +61,7 @@ export class IndexController {
   <title>${movie.title}</title>
   <originaltitle>${movie.metadata.originalTitle}</originaltitle>
   <year>${movie.metadata.year}</year>
+  <description>${movie.metadata.description}</description>
 </movie>`;
   }
 

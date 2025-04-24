@@ -17,25 +17,6 @@ export class MediaService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  async syncAllMediaLists(): Promise<SyncResults> {
-    const movies = await this.syncServiceFactory.getMoviesList();
-    await this.prismaService.movie.createMany({
-      data: movies,
-      skipDuplicates: true,
-    });
-
-    const shows = await this.syncServiceFactory.getShowsList();
-    await this.prismaService.show.createMany({
-      data: shows,
-      skipDuplicates: true,
-    });
-
-    return {
-      movies: movies.length,
-      shows: shows.length,
-    };
-  }
-
   async getAllMovies() {
     return this.prismaService.movie.findMany({
       orderBy: {
@@ -121,42 +102,6 @@ export class MediaService {
     });
   }
 
-  async getAllShows() {
-    return this.prismaService.show.findMany({
-      orderBy: {
-        title: 'asc',
-      },
-      include: {
-        metadata: true,
-      },
-    });
-  }
-
-  async getShow(id: string) {
-    const show = await this.prismaService.show.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        metadata: true,
-        episodes: {
-          include: {
-            urls: true,
-          },
-        },
-      },
-    });
-    return show;
-  }
-
-  async getMediaUrl(id: string) {
-    return this.prismaService.mediaUrl.findUnique({
-      where: {
-        id,
-      },
-    });
-  }
-
   async getMovieByImdbId(imdbId: string) {
     const existingMovie = await this.prismaService.movie.findFirst({
       where: {
@@ -194,5 +139,60 @@ export class MediaService {
     return this.getMovieById(newMovie.id, {
       imdbId,
     });
+  }
+
+  async getAllShows() {
+    return this.prismaService.show.findMany({
+      orderBy: {
+        title: 'asc',
+      },
+      include: {
+        metadata: true,
+      },
+    });
+  }
+
+  async getShowById(id: string) {
+    const show = await this.prismaService.show.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        metadata: true,
+        episodes: {
+          include: {
+            urls: true,
+          },
+        },
+      },
+    });
+    return show;
+  }
+
+  async getMediaUrl(id: string) {
+    return this.prismaService.mediaUrl.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
+
+  async syncAllMediaLists(): Promise<SyncResults> {
+    const movies = await this.syncServiceFactory.getMoviesList();
+    await this.prismaService.movie.createMany({
+      data: movies,
+      skipDuplicates: true,
+    });
+
+    const shows = await this.syncServiceFactory.getShowsList();
+    await this.prismaService.show.createMany({
+      data: shows,
+      skipDuplicates: true,
+    });
+
+    return {
+      movies: movies.length,
+      shows: shows.length,
+    };
   }
 }

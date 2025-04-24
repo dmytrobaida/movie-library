@@ -89,7 +89,7 @@ export class IndexService {
 
     const showId = path.at(-1);
     assert(showId, 'Id should be present!');
-    const show = await this.mediaService.getShow(showId);
+    const show = await this.mediaService.getShowById(showId);
 
     if (show != null) {
       return {
