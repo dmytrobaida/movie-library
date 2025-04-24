@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import assert from 'assert';
 import { isURL } from 'class-validator';
 import { HTMLElement, parse } from 'node-html-parser';
@@ -34,7 +34,7 @@ export class UakinoSyncService implements ISync {
       'div#dle-content > div.movie-item',
     );
     const firstItem = movieItems.at(0);
-    assert(firstItem, 'Media not found!');
+    assert(firstItem, new NotFoundException('Media not found!'));
 
     const title = firstItem.querySelector('a.movie-title')?.text.trim();
     const parseUrl = firstItem

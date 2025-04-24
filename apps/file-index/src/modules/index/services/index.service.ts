@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import assert from 'assert';
 import { DirectoryContents } from 'src/modules/index/types/directory';
 import { getMediaName } from 'src/modules/index/utils/media-name';
@@ -36,7 +36,7 @@ export class IndexService {
       return this.readShows(path);
     }
 
-    throw new Error('Not found!');
+    throw new NotFoundException('Not found!');
   }
 
   private async readMovies(path: string[]): Promise<DirectoryContents> {
@@ -71,7 +71,7 @@ export class IndexService {
       };
     }
 
-    throw new Error('Not found!');
+    throw new NotFoundException('Not found!');
   }
 
   private async readShows(path: string[]): Promise<DirectoryContents> {
@@ -98,6 +98,6 @@ export class IndexService {
       };
     }
 
-    throw new Error('Not found!');
+    throw new NotFoundException('Not found!');
   }
 }

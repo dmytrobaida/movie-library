@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MediaMetadata } from '@prisma/client';
 import { PrismaService } from 'src/modules/shared/services/prisma.service';
 import { SyncServiceFactory } from 'src/modules/shared/services/sync/sync-service.factory';
@@ -178,7 +178,7 @@ export class MediaService {
       .getMediaByImdbId(imdbId);
 
     if (movieBase == null) {
-      throw new Error('Movie not found!');
+      throw new NotFoundException('Movie not found!');
     }
 
     const newMovie = await this.prismaService.movie.upsert({
