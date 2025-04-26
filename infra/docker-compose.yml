@@ -2,6 +2,7 @@ name: "Movie library"
 
 services:
   fileindex:
+    platform: linux/amd64
     build:
       context: ../apps/file-index/
       dockerfile: .Dockerfile
