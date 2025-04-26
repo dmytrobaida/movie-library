@@ -42,7 +42,7 @@ export class FetchHtmlService {
 
     const browser = await puppeteer.launch({
       headless: true,
-      channel: 'chrome',
+      executablePath: '/chrome-linux/chrome',
       args: ['--no-sandbox'],
     });
     const page = await browser.newPage();
