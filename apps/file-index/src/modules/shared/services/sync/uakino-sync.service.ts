@@ -1,7 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import assert from 'assert';
 import { isURL } from 'class-validator';
+import { uniq } from 'lodash';
 import { HTMLElement, parse } from 'node-html-parser';
+import { FetchHtmlService } from 'src/modules/shared/services/fetch-html.service';
 import { ISync } from 'src/modules/shared/services/sync/i-sync.interface';
 import {
   MediaBase,
@@ -12,14 +14,18 @@ import {
   ShowSeasonDetails,
 } from 'src/modules/shared/types/media';
 import { parseAshdiPage } from 'src/modules/shared/utils/ashdi';
-import { getPageHtml } from 'src/modules/shared/utils/html';
 
 const uakinoSearchUrl = 'https://uakino.me/';
 const baseUrl = 'https://uakino.me/';
 
 @Injectable()
 export class UakinoSyncService implements ISync {
+  private readonly logger = new Logger(UakinoSyncService.name);
+
+  constructor(private readonly fetchHtmlService: FetchHtmlService) {}
+
   async getMediaByImdbId(imdbId: string): Promise<MediaBase> {
+    this.logger.log(`Getting media by imdb: ${imdbId}`);
     const html = await fetch(uakinoSearchUrl, {
       method: 'POST',
       headers: {
@@ -63,8 +69,9 @@ export class UakinoSyncService implements ISync {
 
   async getMovieDetails(url: string): Promise<MovieDetails> {
     assert(isURL(url), 'Should be url!');
+    this.logger.log(`Getting movie details: ${url}`);
 
-    const html = await getPageHtml(url, true);
+    const html = await this.fetchHtmlService.fetchHtml(url, true);
     const root = parse(html);
 
     const posterUrl = root
@@ -97,18 +104,14 @@ export class UakinoSyncService implements ISync {
 
   async getShowDetails(url: string): Promise<ShowDetails> {
     assert(isURL(url), 'Should be url!');
+    this.logger.log(`Getting show details: ${url}`);
 
     const seasonDetails = await this.getShowSeason(url);
     const seasons: ShowSeasonDetails[] = [];
 
     for (const seasonUrl of seasonDetails.seasonsUrls) {
       seasons.push(await this.getShowSeason(seasonUrl));
-      break;
     }
-
-    console.log(seasonDetails, seasons);
-
-    throw new Error('test');
 
     return {
       originalTitle: seasonDetails.originalTitle,
@@ -125,8 +128,9 @@ export class UakinoSyncService implements ISync {
     url: string,
   ): Promise<ShowSeasonDetails & { seasonsUrls: string[] }> {
     assert(isURL(url), 'Should be url!');
+    this.logger.log(`Getting show season details: ${url}`);
 
-    const html = await getPageHtml(url, true);
+    const html = await this.fetchHtmlService.fetchHtml(url, true);
     const root = parse(html);
 
     const posterUrl = root
@@ -169,7 +173,7 @@ export class UakinoSyncService implements ISync {
       country,
       episodes,
       // needed because there is no info about current season
-      seasonsUrls: seasons.concat(url).toSorted(),
+      seasonsUrls: uniq(seasons.concat(url).toSorted()),
     };
   }
 
@@ -227,7 +231,11 @@ export class UakinoSyncService implements ISync {
       assert(name, 'Something went wrong when parsing name!');
       assert(episodeNumber, 'Something went wrong when parsing episodeNumber!');
 
-      const { m3u8Url } = await parseAshdiPage(ashdiUrl);
+      if (!ashdiUrl.includes('ashdi')) {
+        continue;
+      }
+
+      const { m3u8Url } = await parseAshdiPage(ashdiUrl, this.fetchHtmlService);
       groupedItems[episodeNumber] = (groupedItems[episodeNumber] ?? []).concat({
         name,
         url: m3u8Url,
@@ -250,7 +258,7 @@ export class UakinoSyncService implements ISync {
     const ashdiUrl = htmlRoot.querySelector('iframe#pre')?.getAttribute('src');
 
     if (ashdiUrl != null) {
-      const { m3u8Url } = await parseAshdiPage(ashdiUrl);
+      const { m3u8Url } = await parseAshdiPage(ashdiUrl, this.fetchHtmlService);
 
       return [
         {
@@ -271,7 +279,12 @@ export class UakinoSyncService implements ISync {
     for (const { name, ashdiUrl } of voicesLi) {
       assert(ashdiUrl, 'Something went wrong when parsing ashdiUrl!');
       assert(name, 'Something went wrong when parsing name!');
-      const { m3u8Url } = await parseAshdiPage(ashdiUrl);
+
+      if (!ashdiUrl.includes('ashdi')) {
+        continue;
+      }
+
+      const { m3u8Url } = await parseAshdiPage(ashdiUrl, this.fetchHtmlService);
 
       urls.push({
         name,

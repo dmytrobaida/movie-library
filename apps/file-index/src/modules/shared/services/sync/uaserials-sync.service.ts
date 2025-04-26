@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import assert from 'assert';
 import { isURL } from 'class-validator';
 import { HTMLElement, parse } from 'node-html-parser';
+import { FetchHtmlService } from 'src/modules/shared/services/fetch-html.service';
 import { ISync } from 'src/modules/shared/services/sync/i-sync.interface';
 import {
   MediaBase,
@@ -11,12 +12,15 @@ import {
 } from 'src/modules/shared/types/media';
 import { parseAshdiPage } from 'src/modules/shared/utils/ashdi';
 import { parseUnformattedUkrainianDate } from 'src/modules/shared/utils/date';
-import { getPageHtml } from 'src/modules/shared/utils/html';
 
 const baseUrl = 'https://uaserial.top';
 
 @Injectable()
 export class UaserialsSyncService implements ISync {
+  private readonly logger = new Logger(UaserialsSyncService.name);
+
+  constructor(private readonly fetchHtmlService: FetchHtmlService) {}
+
   getShowDetails(url: string): Promise<ShowDetails> {
     throw new Error('Method not implemented.', { cause: url });
   }
@@ -36,7 +40,7 @@ export class UaserialsSyncService implements ISync {
   async getMovieDetails(url: string): Promise<MovieDetails> {
     assert(isURL(url), 'Should be url!');
 
-    const html = await getPageHtml(url);
+    const html = await this.fetchHtmlService.fetchHtml(url);
     const root = parse(html);
 
     const posterUrl = root
@@ -82,7 +86,7 @@ export class UaserialsSyncService implements ISync {
     let i = 0;
 
     while (nextUrl != null) {
-      const html = await getPageHtml(baseUrl + nextUrl);
+      const html = await this.fetchHtmlService.fetchHtml(baseUrl + nextUrl);
       const parseResult = this.parseHtmlPage(html);
       allMedia.push(...parseResult.media);
       nextUrl = parseResult.nextPage;
@@ -133,7 +137,9 @@ export class UaserialsSyncService implements ISync {
   ): Promise<MediaUrlBase[]> {
     const embedLink = htmlRoot.querySelector('#embed')?.getAttribute('src');
     assert(embedLink, 'Something went wrong when parsing embedLink!');
-    const embedHtml = await getPageHtml(baseUrl + embedLink);
+    const embedHtml = await this.fetchHtmlService.fetchHtml(
+      baseUrl + embedLink,
+    );
     const embedRoot = parse(embedHtml);
     const voicesUrls = embedRoot
       .querySelectorAll('select.voices__select > option')
@@ -143,14 +149,15 @@ export class UaserialsSyncService implements ISync {
       }));
     const urls: MediaUrlBase[] = [];
 
-    for (const voiceUrl of voicesUrls) {
-      if (!voiceUrl.url?.includes('ashdi')) {
+    for (const { name, url } of voicesUrls) {
+      if (!url?.includes('ashdi')) {
         continue;
       }
 
-      const { m3u8Url } = await parseAshdiPage(voiceUrl.url);
+      this.logger.log(`Parsing: ${url}`);
+      const { m3u8Url } = await parseAshdiPage(url, this.fetchHtmlService);
       urls.push({
-        name: voiceUrl.name,
+        name,
         url: m3u8Url,
       });
     }

@@ -1,4 +1,5 @@
 import { Global, Module } from '@nestjs/common';
+import { FetchHtmlService } from 'src/modules/shared/services/fetch-html.service';
 import { MediaService } from 'src/modules/shared/services/media.service';
 import { PrismaService } from 'src/modules/shared/services/prisma.service';
 import { SyncServiceFactory } from 'src/modules/shared/services/sync/sync-service.factory';
@@ -15,6 +16,7 @@ import { UaserialsSyncService } from 'src/modules/shared/services/sync/uaserials
     UakinoSyncService,
     SyncServiceFactory,
     MediaService,
+    FetchHtmlService,
   ],
   exports: [MediaService],
 })

@@ -82,3 +82,10 @@ model MediaUrl {
   ShowEpisode   ShowEpisode? @relation(fields: [showEpisodeId], references: [id])
   showEpisodeId String?
 }
+
+model HtmlFetch {
+  id String @id @default(uuid())
+
+  url    String @unique
+  result String
+}

@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { MediaMetadata } from '@prisma/client';
+import { MediaMetadata, ShowEpisode, ShowSeason } from '@prisma/client';
 import { PrismaService } from 'src/modules/shared/services/prisma.service';
 import { SyncServiceFactory } from 'src/modules/shared/services/sync/sync-service.factory';
 
@@ -32,19 +32,7 @@ export class MediaService {
     id: string,
     partialMetadataToAdd?: Partial<MediaMetadata>,
   ) {
-    const getMovieById = (movieId: string) => {
-      return this.prismaService.movie.findUnique({
-        where: {
-          id: movieId,
-        },
-        include: {
-          metadata: true,
-          urls: true,
-        },
-      });
-    };
-
-    const movie = await getMovieById(id);
+    const movie = await this.getDbMovieByIdOrImdbId({ movieId: id });
 
     if (movie == null) {
       return null;
@@ -68,7 +56,12 @@ export class MediaService {
           metadata: {
             create: {
               ...partialMetadataToAdd,
-              ...details,
+              originalTitle: details.originalTitle,
+              country: details.country,
+              description: details.description,
+              year: details.year,
+              posterUrl: details.posterUrl,
+              releaseDate: details.releaseDate,
             },
           },
         },
@@ -90,21 +83,11 @@ export class MediaService {
       });
     }
 
-    return getMovieById(id);
+    return this.getDbMovieByIdOrImdbId({ movieId: id });
   }
 
   async getMovieByImdbId(imdbId: string) {
-    const existingMovie = await this.prismaService.movie.findFirst({
-      where: {
-        metadata: {
-          imdbId,
-        },
-      },
-      include: {
-        metadata: true,
-        urls: true,
-      },
-    });
+    const existingMovie = await this.getDbMovieByIdOrImdbId({ imdbId });
 
     if (existingMovie != null) {
       this.logger.log(`Found cached movie info for: ${existingMovie.id}`);
@@ -144,23 +127,7 @@ export class MediaService {
   }
 
   async getShowById(id: string, partialMetadataToAdd?: Partial<MediaMetadata>) {
-    const getShowById = (showId: string) => {
-      return this.prismaService.show.findUnique({
-        where: {
-          id: showId,
-        },
-        include: {
-          metadata: true,
-          seasons: {
-            include: {
-              Show: true,
-            },
-          },
-        },
-      });
-    };
-
-    const show = await getShowById(id);
+    const show = await this.getDbShowByIdOrImdbId({ showId: id });
 
     if (show == null) {
       return null;
@@ -196,18 +163,43 @@ export class MediaService {
 
     if (show.seasons.length === 0) {
       const createdSeasons = await this.prismaService.$transaction(
-        details.seasons.map((s) =>
-          this.prismaService.showSeason.create({
-            data: {
-              ...s,
-              episodes: {
-                createMany: {
-                  data: s.episodes,
+        async (tx) => {
+          const seasons: ShowSeason[] = [];
+
+          for (const s of details.seasons) {
+            const createdEpisodes: ShowEpisode[] = [];
+
+            for (const e of s.episodes) {
+              const createdEpisode = await tx.showEpisode.create({
+                data: {
+                  episodeNumber: e.episodeNumber,
+                  urls: {
+                    createMany: {
+                      data: e.urls,
+                    },
+                  },
+                },
+              });
+
+              createdEpisodes.push(createdEpisode);
+            }
+
+            const createdSeason = await tx.showSeason.create({
+              data: {
+                title: s.title,
+                seasonNumber: s.seasonNumber,
+                parseUrl: s.parseUrl,
+                episodes: {
+                  connect: createdEpisodes,
                 },
               },
-            },
-          }),
-        ),
+            });
+
+            seasons.push(createdSeason);
+          }
+
+          return seasons;
+        },
       );
 
       await this.prismaService.show.update({
@@ -222,25 +214,11 @@ export class MediaService {
       });
     }
 
-    return getShowById(id);
+    return this.getDbShowByIdOrImdbId({ showId: id });
   }
 
   async getShowByImdbId(imdbId: string) {
-    const existingShow = await this.prismaService.show.findFirst({
-      where: {
-        metadata: {
-          imdbId,
-        },
-      },
-      include: {
-        metadata: true,
-        seasons: {
-          include: {
-            Show: true,
-          },
-        },
-      },
-    });
+    const existingShow = await this.getDbShowByIdOrImdbId({ imdbId });
 
     if (existingShow != null) {
       this.logger.log(`Found cached show info for: ${existingShow.id}`);
@@ -293,5 +271,49 @@ export class MediaService {
       movies: movies.length,
       shows: shows.length,
     };
+  }
+
+  private getDbMovieByIdOrImdbId(data: { movieId?: string; imdbId?: string }) {
+    return this.prismaService.movie.findFirst({
+      where: {
+        id: data.movieId,
+        metadata:
+          data.imdbId != null
+            ? {
+                imdbId: data.imdbId,
+              }
+            : undefined,
+      },
+      include: {
+        metadata: true,
+        urls: true,
+      },
+    });
+  }
+
+  private getDbShowByIdOrImdbId(data: { showId?: string; imdbId?: string }) {
+    return this.prismaService.show.findFirst({
+      where: {
+        id: data.showId,
+        metadata:
+          data.imdbId != null
+            ? {
+                imdbId: data.imdbId,
+              }
+            : undefined,
+      },
+      include: {
+        metadata: true,
+        seasons: {
+          include: {
+            episodes: {
+              include: {
+                urls: true,
+              },
+            },
+          },
+        },
+      },
+    });
   }
 }
