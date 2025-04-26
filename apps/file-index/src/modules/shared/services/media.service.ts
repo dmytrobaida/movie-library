@@ -305,6 +305,9 @@ export class MediaService {
       include: {
         metadata: true,
         seasons: {
+          orderBy: {
+            title: 'asc',
+          },
           include: {
             episodes: {
               include: {

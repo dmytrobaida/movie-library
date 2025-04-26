@@ -6,6 +6,7 @@ import {
   Param,
   Render,
 } from '@nestjs/common';
+import assert from 'assert';
 import { IndexService } from 'src/modules/index/services/index.service';
 import { MediaService } from 'src/modules/shared/services/media.service';
 import { IndexPrefix } from 'src/modules/shared/types/prefixes';
@@ -25,6 +26,7 @@ export class IndexController {
     return {
       directory: directoryContents.dirName,
       filesOrFolders: directoryContents.filesOrFolders,
+      mediaUrls: directoryContents.mediaUrls ?? [],
     };
   }
 
@@ -32,37 +34,9 @@ export class IndexController {
   @Header('content-type', 'text/plain')
   async strmFile(@Param('mediaUrlId') mediaUrlId: string) {
     const mediaUrl = await this.mediaService.getMediaUrl(mediaUrlId);
-
-    if (mediaUrl?.url == null) {
-      throw new NotFoundException();
-    }
+    assert(mediaUrl?.url, new NotFoundException());
 
     return mediaUrl?.url;
-  }
-
-  @Get('/{*path/}movie.nfo')
-  @Header('content-type', 'text/xml')
-  async metadataFile(@Param('path') path: string[] = []) {
-    const movieId = path.at(-1);
-
-    if (movieId == null) {
-      throw new NotFoundException();
-    }
-
-    const movie = await this.mediaService.getMovieById(movieId);
-
-    if (movie == null || movie.metadata == null) {
-      throw new NotFoundException();
-    }
-
-    // TODO: use some xml builder
-    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<movie>
-  <title>${movie.title}</title>
-  <originaltitle>${movie.metadata.originalTitle}</originaltitle>
-  <year>${movie.metadata.year}</year>
-  <description>${movie.metadata.description}</description>
-</movie>`;
   }
 
   @Get('/imdb/movie/:id')
@@ -77,5 +51,45 @@ export class IndexController {
   async imdbShow(@Param('id') id: string) {
     const show = await this.mediaService.getShowByImdbId(id);
     return show;
+  }
+
+  @Get('/{*path/}movie.nfo')
+  @Header('content-type', 'text/xml')
+  async movieNfo(@Param('path') path: string[] = []) {
+    const movieId = path.at(-1);
+    assert(movieId, new NotFoundException());
+
+    const movie = await this.mediaService.getMovieById(movieId);
+    assert(movie, new NotFoundException());
+    assert(movie.metadata, new NotFoundException());
+
+    // TODO: use some xml builder
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<movie>
+  <title>${movie.title}</title>
+  <originaltitle>${movie.metadata.originalTitle}</originaltitle>
+  <year>${movie.metadata.year}</year>
+  <description>${movie.metadata.description}</description>
+</movie>`;
+  }
+
+  @Get('/{*path/}show.nfo')
+  @Header('content-type', 'text/xml')
+  async showNfo(@Param('path') path: string[] = []) {
+    const showId = path.at(-1);
+    assert(showId, new NotFoundException());
+
+    const show = await this.mediaService.getShowById(showId);
+    assert(show, new NotFoundException());
+    assert(show.metadata, new NotFoundException());
+
+    // TODO: use some xml builder
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<show>
+  <title>${show.title}</title>
+  <originaltitle>${show.metadata.originalTitle}</originaltitle>
+  <year>${show.metadata.year}</year>
+  <description>${show.metadata.description}</description>
+</show>`;
   }
 }
