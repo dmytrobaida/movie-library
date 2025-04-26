@@ -1,9 +1,13 @@
-import { MediaBase, MovieDetails } from 'src/modules/shared/types/media';
+import {
+  MediaBase,
+  MovieDetails,
+  ShowDetails,
+} from 'src/modules/shared/types/media';
 
 export interface ISync {
   getMediaByImdbId(imdbId: string): Promise<MediaBase | null>;
   getMoviesList(): Promise<MediaBase[]>;
-  getShowsList(): Promise<MediaBase[]>;
   getMovieDetails(url: string): Promise<MovieDetails>;
-  // TODO: add getShowDetails method
+  getShowsList(): Promise<MediaBase[]>;
+  getShowDetails(url: string): Promise<ShowDetails>;
 }

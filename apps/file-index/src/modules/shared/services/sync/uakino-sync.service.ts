@@ -7,6 +7,9 @@ import {
   MediaBase,
   MediaUrlBase,
   MovieDetails,
+  ShowDetails,
+  ShowEpisode,
+  ShowSeasonDetails,
 } from 'src/modules/shared/types/media';
 import { parseAshdiPage } from 'src/modules/shared/utils/ashdi';
 import { getPageHtml } from 'src/modules/shared/utils/html';
@@ -92,6 +95,84 @@ export class UakinoSyncService implements ISync {
     };
   }
 
+  async getShowDetails(url: string): Promise<ShowDetails> {
+    assert(isURL(url), 'Should be url!');
+
+    const seasonDetails = await this.getShowSeason(url);
+    const seasons: ShowSeasonDetails[] = [];
+
+    for (const seasonUrl of seasonDetails.seasonsUrls) {
+      seasons.push(await this.getShowSeason(seasonUrl));
+      break;
+    }
+
+    console.log(seasonDetails, seasons);
+
+    throw new Error('test');
+
+    return {
+      originalTitle: seasonDetails.originalTitle,
+      year: seasonDetails.year,
+      posterUrl: seasonDetails.posterUrl,
+      description: seasonDetails.description,
+      releaseDate: seasonDetails.releaseDate,
+      country: seasonDetails.country,
+      seasons,
+    };
+  }
+
+  async getShowSeason(
+    url: string,
+  ): Promise<ShowSeasonDetails & { seasonsUrls: string[] }> {
+    assert(isURL(url), 'Should be url!');
+
+    const html = await getPageHtml(url, true);
+    const root = parse(html);
+
+    const posterUrl = root
+      .querySelector('div.film-poster img')
+      ?.getAttribute('src');
+    const description = root
+      .querySelector('div[itemprop="description"]')
+      ?.text.trim();
+    const title = root.querySelector('span.solototle')?.text.trim();
+    const originalTitle = root.querySelector('span.origintitle')?.text.trim();
+    const seasons = root
+      .querySelectorAll('ul.seasons a')
+      .map((a) => a.getAttribute('href'))
+      .filter((h) => h != null);
+
+    assert(posterUrl, 'Something went wrong when parsing posterUrl!');
+    assert(description, 'Something went wrong when parsing description!');
+    assert(title, 'Something went wrong when parsing title!');
+    assert(originalTitle, 'Something went wrong when parsing originalTitle!');
+    assert(seasons.length > 0, 'Something went wrong when parsing seasons!');
+
+    const seasonNumber = originalTitle.match(/(\d+)\s*season/i)?.[1];
+    assert(seasonNumber, 'Something went wrong when parsing seasonNumber!');
+
+    const { releaseDate, country } =
+      this.getReleaseDateAndCountryFromPage(root);
+
+    const episodes = await this.parseShowEpisodesFromHtml(root);
+    assert(episodes.length > 0, 'Something went wrong when parsing episodes!');
+
+    return {
+      title,
+      year: releaseDate.getFullYear(),
+      posterUrl: baseUrl + posterUrl,
+      parseUrl: url,
+      seasonNumber: Number(seasonNumber),
+      description,
+      releaseDate,
+      originalTitle,
+      country,
+      episodes,
+      // needed because there is no info about current season
+      seasonsUrls: seasons.concat(url).toSorted(),
+    };
+  }
+
   private getReleaseDateAndCountryFromPage(htmlRoot: HTMLElement): {
     releaseDate: Date;
     country: string;
@@ -99,7 +180,7 @@ export class UakinoSyncService implements ISync {
     let year: number | undefined;
     let country: string | undefined;
 
-    const allInfoItems = htmlRoot.querySelectorAll('div.fi-item.clearfix');
+    const allInfoItems = htmlRoot.querySelectorAll('div.clearfix');
 
     for (const infoItem of allInfoItems) {
       if (
@@ -123,6 +204,44 @@ export class UakinoSyncService implements ISync {
       // setting 1 day of year because no such data
       releaseDate: new Date(year, 0, 1),
     };
+  }
+
+  private async parseShowEpisodesFromHtml(
+    htmlRoot: HTMLElement,
+  ): Promise<ShowEpisode[]> {
+    const episodes: ShowEpisode[] = [];
+    const items = htmlRoot
+      .querySelectorAll('div.playlists-videos > div.playlists-items li')
+      .map((li) => ({
+        name: li.getAttribute('data-voice'),
+        ashdiUrl: li.getAttribute('data-file'),
+        episodeNumber: li.text.match(/Серія\s*(\d+)/i)?.[1],
+      }));
+
+    const groupedItems: {
+      [episodeNumber: string]: { name: string; url: string }[];
+    } = {};
+
+    for (const { ashdiUrl, name, episodeNumber } of items) {
+      assert(ashdiUrl, 'Something went wrong when parsing ashdiUrl!');
+      assert(name, 'Something went wrong when parsing name!');
+      assert(episodeNumber, 'Something went wrong when parsing episodeNumber!');
+
+      const { m3u8Url } = await parseAshdiPage(ashdiUrl);
+      groupedItems[episodeNumber] = (groupedItems[episodeNumber] ?? []).concat({
+        name,
+        url: m3u8Url,
+      });
+    }
+
+    for (const eNum in groupedItems) {
+      episodes.push({
+        episodeNumber: Number(eNum),
+        urls: groupedItems[eNum],
+      });
+    }
+
+    return episodes;
   }
 
   private async parseUrlsFromHtml(
@@ -149,15 +268,15 @@ export class UakinoSyncService implements ISync {
         ashdiUrl: li.getAttribute('data-file'),
       }));
 
-    for (const voiceLi of voicesLi) {
-      if (voiceLi.ashdiUrl != null && voiceLi.name != null) {
-        const { m3u8Url } = await parseAshdiPage(voiceLi.ashdiUrl);
+    for (const { name, ashdiUrl } of voicesLi) {
+      assert(ashdiUrl, 'Something went wrong when parsing ashdiUrl!');
+      assert(name, 'Something went wrong when parsing name!');
+      const { m3u8Url } = await parseAshdiPage(ashdiUrl);
 
-        urls.push({
-          name: voiceLi.name,
-          url: m3u8Url,
-        });
-      }
+      urls.push({
+        name,
+        url: m3u8Url,
+      });
     }
 
     return urls;

@@ -7,6 +7,7 @@ import {
   MediaBase,
   MediaUrlBase,
   MovieDetails,
+  ShowDetails,
 } from 'src/modules/shared/types/media';
 import { parseAshdiPage } from 'src/modules/shared/utils/ashdi';
 import { parseUnformattedUkrainianDate } from 'src/modules/shared/utils/date';
@@ -16,6 +17,10 @@ const baseUrl = 'https://uaserial.top';
 
 @Injectable()
 export class UaserialsSyncService implements ISync {
+  getShowDetails(url: string): Promise<ShowDetails> {
+    throw new Error('Method not implemented.', { cause: url });
+  }
+
   getMediaByImdbId(): Promise<MediaBase> {
     throw new Error('Method not implemented.');
   }

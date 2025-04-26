@@ -65,10 +65,17 @@ export class IndexController {
 </movie>`;
   }
 
-  @Get('/imdb/:id')
+  @Get('/imdb/movie/:id')
   @Header('content-type', 'application/json')
-  async imdb(@Param('id') id: string) {
+  async imdbMovie(@Param('id') id: string) {
     const movie = await this.mediaService.getMovieByImdbId(id);
     return movie;
+  }
+
+  @Get('/imdb/show/:id')
+  @Header('content-type', 'application/json')
+  async imdbShow(@Param('id') id: string) {
+    const show = await this.mediaService.getShowByImdbId(id);
+    return show;
   }
 }

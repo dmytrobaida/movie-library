@@ -32,15 +32,19 @@ export class MediaService {
     id: string,
     partialMetadataToAdd?: Partial<MediaMetadata>,
   ) {
-    const movie = await this.prismaService.movie.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        metadata: true,
-        urls: true,
-      },
-    });
+    const getMovieById = (movieId: string) => {
+      return this.prismaService.movie.findUnique({
+        where: {
+          id: movieId,
+        },
+        include: {
+          metadata: true,
+          urls: true,
+        },
+      });
+    };
+
+    const movie = await getMovieById(id);
 
     if (movie == null) {
       return null;
@@ -64,12 +68,7 @@ export class MediaService {
           metadata: {
             create: {
               ...partialMetadataToAdd,
-              year: details.year,
-              posterUrl: details.posterUrl,
-              originalTitle: details.originalTitle,
-              description: details.description,
-              releaseDate: details.releaseDate,
-              country: details.country,
+              ...details,
             },
           },
         },
@@ -91,15 +90,7 @@ export class MediaService {
       });
     }
 
-    return this.prismaService.movie.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        metadata: true,
-        urls: true,
-      },
-    });
+    return getMovieById(id);
   }
 
   async getMovieByImdbId(imdbId: string) {
@@ -152,21 +143,129 @@ export class MediaService {
     });
   }
 
-  async getShowById(id: string) {
-    const show = await this.prismaService.show.findUnique({
+  async getShowById(id: string, partialMetadataToAdd?: Partial<MediaMetadata>) {
+    const getShowById = (showId: string) => {
+      return this.prismaService.show.findUnique({
+        where: {
+          id: showId,
+        },
+        include: {
+          metadata: true,
+          seasons: {
+            include: {
+              Show: true,
+            },
+          },
+        },
+      });
+    };
+
+    const show = await getShowById(id);
+
+    if (show == null) {
+      return null;
+    }
+
+    if (show.metadata != null && show.seasons.length > 0) {
+      this.logger.log(`Found cached show info for: ${show.id}`);
+      return show;
+    }
+
+    const details = await this.syncServiceFactory.getShowDetails(show.parseUrl);
+
+    if (show.metadata == null) {
+      await this.prismaService.show.update({
+        where: {
+          id: show.id,
+        },
+        data: {
+          metadata: {
+            create: {
+              ...partialMetadataToAdd,
+              year: details.year,
+              posterUrl: details.posterUrl,
+              originalTitle: details.originalTitle,
+              description: details.description,
+              releaseDate: details.releaseDate,
+              country: details.country,
+            },
+          },
+        },
+      });
+    }
+
+    if (show.seasons.length === 0) {
+      const createdSeasons = await this.prismaService.$transaction(
+        details.seasons.map((s) =>
+          this.prismaService.showSeason.create({
+            data: {
+              ...s,
+              episodes: {
+                createMany: {
+                  data: s.episodes,
+                },
+              },
+            },
+          }),
+        ),
+      );
+
+      await this.prismaService.show.update({
+        where: {
+          id: show.id,
+        },
+        data: {
+          seasons: {
+            connect: createdSeasons,
+          },
+        },
+      });
+    }
+
+    return getShowById(id);
+  }
+
+  async getShowByImdbId(imdbId: string) {
+    const existingShow = await this.prismaService.show.findFirst({
       where: {
-        id,
+        metadata: {
+          imdbId,
+        },
       },
       include: {
         metadata: true,
-        episodes: {
+        seasons: {
           include: {
-            urls: true,
+            Show: true,
           },
         },
       },
     });
-    return show;
+
+    if (existingShow != null) {
+      this.logger.log(`Found cached show info for: ${existingShow.id}`);
+      return existingShow;
+    }
+
+    const showBase = await this.syncServiceFactory
+      .getSyncService('uakino')
+      .getMediaByImdbId(imdbId);
+
+    if (showBase == null) {
+      throw new NotFoundException('Show not found!');
+    }
+
+    const newShow = await this.prismaService.show.upsert({
+      where: {
+        parseUrl: showBase.parseUrl,
+      },
+      create: showBase,
+      update: showBase,
+    });
+
+    return this.getShowById(newShow.id, {
+      imdbId,
+    });
   }
 
   async getMediaUrl(id: string) {

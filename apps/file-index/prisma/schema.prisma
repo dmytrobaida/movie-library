@@ -25,22 +25,34 @@ model Show {
   title    String
   parseUrl String @unique
 
-  episodes ShowEpisode[]
+  seasons ShowSeason[]
 
   metadata        MediaMetadata? @relation(fields: [mediaMetadataId], references: [id])
   mediaMetadataId String?
 }
 
-model ShowEpisode {
+model ShowSeason {
   id String @id @default(uuid())
 
-  season Int
-  number Int
+  title        String
+  seasonNumber Int
+  parseUrl     String @unique
 
-  urls MediaUrl[]
+  episodes ShowEpisode[]
 
   Show   Show?   @relation(fields: [showId], references: [id])
   showId String?
+}
+
+model ShowEpisode {
+  id String @id @default(uuid())
+
+  episodeNumber Int
+
+  urls MediaUrl[]
+
+  ShowSeason   ShowSeason? @relation(fields: [showSeasonId], references: [id])
+  showSeasonId String?
 }
 
 model MediaMetadata {
