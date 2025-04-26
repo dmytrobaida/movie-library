@@ -1,6 +1,7 @@
-import { BullModule } from '@nestjs/bullmq';
+import { BullModule, InjectQueue } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Queue } from 'bullmq';
 import { SyncProcessor } from 'src/modules/sync/processors/sync.processor';
 import { SyncQueue } from 'src/modules/sync/types/queues';
 
@@ -23,4 +24,23 @@ import { SyncQueue } from 'src/modules/sync/types/queues';
   controllers: [],
   providers: [SyncProcessor],
 })
-export class SyncModule {}
+export class SyncModule {
+  constructor(
+    @InjectQueue(SyncQueue)
+    private readonly syncQueue: Queue,
+  ) {}
+
+  onModuleInit() {
+    void this.syncQueue.add(
+      'sync',
+      {},
+      {
+        repeat: {
+          // twice a day
+          pattern: '0 */12 * * *',
+          immediately: true,
+        },
+      },
+    );
+  }
+}
