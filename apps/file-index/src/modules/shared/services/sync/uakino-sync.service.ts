@@ -150,7 +150,6 @@ export class UakinoSyncService implements ISync {
     assert(description, 'Something went wrong when parsing description!');
     assert(title, 'Something went wrong when parsing title!');
     assert(originalTitle, 'Something went wrong when parsing originalTitle!');
-    assert(seasons.length > 0, 'Something went wrong when parsing seasons!');
 
     const seasonNumber = originalTitle.match(/(\d+)\s*season/i)?.[1];
     assert(seasonNumber, 'Something went wrong when parsing seasonNumber!');
