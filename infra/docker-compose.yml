@@ -5,7 +5,7 @@ services:
     platform: linux/amd64
     build:
       context: ../apps/file-index/
-      dockerfile: .Dockerfile
+      dockerfile: Dockerfile
     environment:
       DATABASE_URL: "postgresql://movie_user:movie_password@postgres:5432/movie_library?schema=public"
       REDIS_URL: "redis:6379"
