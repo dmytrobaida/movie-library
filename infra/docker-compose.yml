@@ -8,6 +8,7 @@ services:
     environment:
       DATABASE_URL: "postgresql://movie_user:movie_password@postgres:5432/movie_library?schema=public"
       REDIS_URL: "redis:6379"
+      ENABLE_SYNC: "false"
     ports:
       - "3000:3000"
 
