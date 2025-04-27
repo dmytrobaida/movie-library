@@ -18,6 +18,6 @@ import { UaserialsSyncService } from 'src/modules/shared/services/sync/uaserials
     MediaService,
     FetchHtmlService,
   ],
-  exports: [MediaService],
+  exports: [MediaService, PrismaService],
 })
 export class SharedModule {}
