@@ -3,6 +3,8 @@ name: Build and publish file-index Docker
 on:
   push:
     branches: ["main"]
+    paths:
+      - "apps/file-index/**"
 
 env:
   REGISTRY: ghcr.io
