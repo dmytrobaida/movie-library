@@ -1,35 +1,28 @@
 <html>
   <head>
-    <meta charset='utf-8' />
-    <title>
-      {{directory}}
-    </title>
+    <meta charset="utf-8" />
+    <title>{{directory}}</title>
   </head>
   <body>
-    <h1>
-      Contents of
-      {{directory}}
-    </h1>
+    <h1>Contents of {{directory}}</h1>
     <ol>
       {{#each filesOrFolders}}
-        <li>
-          <a href='{{this.url}}'>
-            {{this.name}}
-          </a>
-        </li>
+      <li>
+        <a href="{{this.url}}"> {{this.name}} </a>
+      </li>
       {{/each}}
     </ol>
 
     {{#if mediaUrls.length}}
-      <video id='media-viewer' preload='auto' width='640' height='264'>
-        {{#each mediaUrls}}
-          <source
-            src='{{this.url}}'
-            type='application/x-mpegURL'
-            label='{{this.name}}'
-          />
-        {{/each}}
-      </video>
+    <video id="media-viewer" preload="auto" width="640" height="264">
+      {{#each mediaUrls}}
+      <source
+        src="{{this.url}}"
+        type="application/x-mpegURL"
+        label="{{this.name}}"
+      />
+      {{/each}}
+    </video>
     {{/if}}
   </body>
 </html>
