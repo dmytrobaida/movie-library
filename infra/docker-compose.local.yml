@@ -32,7 +32,6 @@ services:
     image: stremio/server:latest
     ports:
       - 11470:11470
-      - 12470:12470
 
 volumes:
   postgres_data:
