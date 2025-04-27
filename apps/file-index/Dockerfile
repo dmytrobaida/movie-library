@@ -11,12 +11,14 @@ RUN unzip chromium-linux-arm64.zip
 RUN rm -f ./chromium-linux-arm64.zip
 
 WORKDIR /app
+RUN corepack enable
 COPY package.json .
-RUN npm install
+COPY .yarnrc.yml .
+RUN yarn install
 
 COPY . .
-RUN npm run prisma:generate
-RUN npm run build
+RUN yarn prisma:generate
+RUN yarn build
 
 EXPOSE 3000
-CMD ["npm", "run", "start:prod"]
+CMD ["sh", "./start.sh"]

@@ -1,32 +1,32 @@
 {
-	"name": "Movie Library",
-	"dockerComposeFile": [
-		"../infra/docker-compose.yml",
-		"docker-compose.devcontainer.yml"
-	],
-	"service": "devcontainer",
-	"workspaceFolder": "/movie-library",
-	"shutdownAction": "stopCompose",
-	"runServices": [
-		"devcontainer",
-		"postgres",
-		"redis"
-	],
-	"remoteUser": "root",
-	"features": {
-		"ghcr.io/devcontainers/features/node:1": {
-			"version": 23,
-			"installYarnUsingApt": false
-		}
-	},
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"Prisma.prisma",
-				"esbenp.prettier-vscode",
-				"rvest.vs-code-prettier-eslint",
-				"cweijan.vscode-database-client2"
-			]
-		}
-	}
+  "name": "Movie Library",
+  "dockerComposeFile": [
+    "../infra/docker-compose.local.yml",
+    "docker-compose.devcontainer.yml"
+  ],
+  "service": "devcontainer",
+  "workspaceFolder": "/movie-library",
+  "shutdownAction": "stopCompose",
+  "runServices": [
+    "devcontainer",
+    "postgres",
+    "redis"
+  ],
+  "remoteUser": "root",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": 23,
+      "installYarnUsingApt": false
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Prisma.prisma",
+        "esbenp.prettier-vscode",
+        "rvest.vs-code-prettier-eslint",
+        "cweijan.vscode-database-client2"
+      ]
+    }
+  }
 }
