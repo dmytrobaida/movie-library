@@ -3,6 +3,7 @@ services:
     image: ghcr.io/dmytrobaida/movie-library:main
     environment:
       DATABASE_URL: "postgresql://movie_user:movie_password@postgres:5432/movie_library?schema=public"
+      REDIS_URL: "redis://redis:6379"
       ENABLE_SYNC: "false"
     ports:
       - "3000:3000"
@@ -15,6 +16,9 @@ services:
       POSTGRES_DB: movie_library
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
 
   stremio:
     image: stremio/server:latest
