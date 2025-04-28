@@ -219,7 +219,10 @@ export class UakinoSyncService implements ISync {
         name: li.getAttribute('data-voice'),
         ashdiUrl: li.getAttribute('data-file'),
         episodeNumber: li.text.match(/Серія\s*(\d+)/i)?.[1],
-      }));
+      }))
+      .filter(
+        (e) => e.name != null && e.ashdiUrl != null && e.episodeNumber != null,
+      );
 
     const groupedItems: {
       [episodeNumber: string]: { name: string; url: string }[];
@@ -273,7 +276,8 @@ export class UakinoSyncService implements ISync {
       .map((li) => ({
         name: li.getAttribute('data-voice'),
         ashdiUrl: li.getAttribute('data-file'),
-      }));
+      }))
+      .filter((e) => e.ashdiUrl != null && e.name != null);
 
     for (const { name, ashdiUrl } of voicesLi) {
       assert(ashdiUrl, 'Something went wrong when parsing ashdiUrl!');
