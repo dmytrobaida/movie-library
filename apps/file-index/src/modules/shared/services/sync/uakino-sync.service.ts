@@ -15,8 +15,8 @@ import {
 } from 'src/modules/shared/types/media';
 import { parseAshdiPage } from 'src/modules/shared/utils/ashdi';
 
-const uakinoSearchUrl = 'https://uakino.me/';
-const baseUrl = 'https://uakino.me/';
+const uakinoSearchUrl = 'https://uakino.best/';
+const baseUrl = 'https://uakino.best/';
 
 @Injectable()
 export class UakinoSyncService implements ISync {
