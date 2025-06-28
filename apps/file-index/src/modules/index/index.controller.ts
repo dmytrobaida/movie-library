@@ -39,6 +39,13 @@ export class IndexController {
     return mediaUrl?.url;
   }
 
+  @Get('/delete/:id')
+  async deleteById(@Param('id') id: string) {
+    assert(id, new NotFoundException());
+    await this.mediaService.geleteById(id);
+    return `Successfully deleted movie or show with id: ${id}`;
+  }
+
   @Get('/imdb/movie/:id')
   @Header('content-type', 'application/json')
   async imdbMovie(@Param('id') id: string) {
@@ -70,6 +77,7 @@ export class IndexController {
   <originaltitle>${movie.metadata.originalTitle}</originaltitle>
   <year>${movie.metadata.year}</year>
   <description>${movie.metadata.description}</description>
+  <imdb>${movie.metadata.imdbId}</imdb>
 </movie>`;
   }
 
@@ -90,6 +98,7 @@ export class IndexController {
   <originaltitle>${show.metadata.originalTitle}</originaltitle>
   <year>${show.metadata.year}</year>
   <description>${show.metadata.description}</description>
+  <imdb>${show.metadata.imdbId}</imdb>
 </show>`;
   }
 }

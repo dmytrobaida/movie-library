@@ -273,6 +273,20 @@ export class MediaService {
     };
   }
 
+  async geleteById(id: string) {
+    await this.prismaService.movie.deleteMany({
+      where: {
+        id,
+      },
+    });
+
+    await this.prismaService.show.deleteMany({
+      where: {
+        id,
+      },
+    });
+  }
+
   private getDbMovieByIdOrImdbId(data: { movieId?: string; imdbId?: string }) {
     return this.prismaService.movie.findFirst({
       where: {

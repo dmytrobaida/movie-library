@@ -48,6 +48,7 @@ export class IndexService {
         filesOrFolders: movies.map((m) => ({
           name: getMediaName(m),
           url: `${m.id}/`,
+          deleteUrl: `/i/delete/${m.id}`,
         })),
       };
     }
@@ -81,6 +82,7 @@ export class IndexService {
         filesOrFolders: shows.map((m) => ({
           name: getMediaName(m),
           url: `${m.id}/`,
+          deleteUrl: `/i/delete/${m.id}`,
         })),
       };
     }

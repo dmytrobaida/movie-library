@@ -7,8 +7,11 @@
     <h1>Contents of {{directory}}</h1>
     <ol>
       {{#each filesOrFolders}}
-      <li>
-        <a href="{{this.url}}"> {{this.name}} </a>
+      <li style="display: flex; justify-content: space-between">
+        <a href="{{this.url}}">{{this.name}}</a>
+        {{#if this.deleteUrl}}
+        <a href="{{this.deleteUrl}}">Delete</a>
+        {{/if}}
       </li>
       {{/each}}
     </ol>
