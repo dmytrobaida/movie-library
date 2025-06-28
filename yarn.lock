@@ -6115,6 +6115,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"css-what@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "css-what@npm:6.2.0"
+  checksum: 10c0/8cc2ab4257a3789f02bcd4abbb30e50393030b8abf5d2e3202d76d216322280e7d3a6ee67a0855c31e482e33bfbe30e29bae91bc7abdf1f0bed647ebc016b180
+  languageName: node
+  linkType: hard
+
 "cssfilter@npm:0.0.10":
   version: 0.0.10
   resolution: "cssfilter@npm:0.0.10"
@@ -7245,6 +7252,7 @@ __metadata:
     adminjs: "npm:^7.8.15"
     bullmq: "npm:^5.47.1"
     class-validator: "npm:^0.14.1"
+    css-what: "npm:^6.2.0"
     date-fns: "npm:^4.1.0"
     eslint: "npm:^9.18.0"
     eslint-config-prettier: "npm:^10.0.1"
